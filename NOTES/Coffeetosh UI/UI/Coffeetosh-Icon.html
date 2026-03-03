@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coffeetosh — Menu Bar Icon</title>
+  <style>
+    /* ===================================================
+       TOKENS — Coffee Palette (mirrors Style-Mockup)
+       =================================================== */
+    :root {
+      --bg-page:      #F5EDE3;
+      --bg-card:      #FFFBF5;
+      --bg-section:   #F0E6D8;
+      --bg-menubar:   #EBEBEB;
+      --text-primary: #2C1E12;
+      --text-secondary:#7A6655;
+      --text-tertiary: #A89680;
+      --accent:       #C47A2D;
+      --accent-hover: #A8651F;
+      --border:       rgba(44,30,18,0.10);
+      --border-strong:rgba(44,30,18,0.18);
+      --shadow-card:  0 2px 12px rgba(44,30,18,0.08);
+      --shadow-lg:    0 20px 60px rgba(44,30,18,0.14),0 4px 16px rgba(44,30,18,0.08);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-full: 50px;
+      --font: 'SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg-page:      #1A1310;
+      --bg-card:      #2A2019;
+      --bg-section:   #342920;
+      --bg-menubar:   #2C2C2C;
+      --text-primary: #F0E6D8;
+      --text-secondary:#A89680;
+      --text-tertiary: #7A6655;
+      --accent:       #D4923A;
+      --accent-hover: #E0A04A;
+      --border:       rgba(240,230,216,0.08);
+      --border-strong:rgba(240,230,216,0.14);
+      --shadow-card:  0 2px 12px rgba(0,0,0,0.24);
+      --shadow-lg:    0 20px 60px rgba(0,0,0,0.4),0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding: 48px 32px 80px;
+    }
+
+    /* ===================================================
+       PAGE LAYOUT
+       =================================================== */
+    .page { max-width: 860px; margin: 0 auto; }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .page-header span {
+      color: var(--accent);
+    }
+    .page-header p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .theme-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 14px; padding: 5px 14px;
+      border-radius: var(--r-full);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-section);
+      cursor: pointer; font-size: 12px;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { color: var(--text-primary); }
+
+    /* ===================================================
+       SECTION LABEL
+       =================================================== */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+
+    /* ===================================================
+       CARD
+       =================================================== */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    /* ===================================================
+       FAKE MENU BAR
+       =================================================== */
+    .menubar-demo {
+      background: var(--bg-menubar);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border-strong);
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 10px;
+      gap: 2px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+    .menubar-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .menubar-item:hover { background: rgba(128,128,128,0.15); }
+    .menubar-item.active-item { background: rgba(128,128,128,0.20); }
+    .menubar-item svg { display: block; }
+
+    .menubar-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-right: 6px;
+      opacity: 0.7;
+    }
+
+    .menubar-meta {
+      display: flex; flex-direction: column; gap: 6px;
+      margin-top: 14px;
+    }
+    .menubar-row {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .menubar-row span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      min-width: 40px;
+    }
+    .state-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px; border-radius: var(--r-full);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .state-chip.off {
+      background: var(--bg-section);
+      color: var(--text-tertiary);
+    }
+    .state-chip.on {
+      background: rgba(212,146,58,0.18);
+      color: var(--accent);
+    }
+
+    /* ===================================================
+       ICON SHOWCASE GRID
+       =================================================== */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .icon-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 16px;
+      background: var(--bg-section);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+    }
+    .icon-cell-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+    .icon-cell-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 160px;
+      line-height: 1.5;
+    }
+
+    /* Icon size variants */
+    .sizes-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .size-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .size-item span {
+      font-size: 9px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+    }
+
+    /* ===================================================
+       LIVE TOGGLE DEMO
+       =================================================== */
+    .toggle-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 32px;
+      background: var(--bg-section);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+    }
+    .toggle-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px; height: 100px;
+      border-radius: var(--r-xl);
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+    }
+    .toggle-preview svg {
+      transition: all 0.3s ease;
+    }
+
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 22px;
+      border-radius: var(--r-full);
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.1px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(196,122,45,0.35);
+    }
+    .toggle-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(196,122,45,0.4);
+    }
+    .toggle-btn:active { transform: translateY(0); }
+    .toggle-status {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.2px;
+    }
+    .toggle-status strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ===================================================
+       CONTEXT SECTION (dark + light bg chips)
+       =================================================== */
+    .context-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .ctx-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 10px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+    }
+    .ctx-cell.bg-dark  { background: #1c1c1e; }
+    .ctx-cell.bg-light { background: #f5f5f5; }
+    .ctx-cell.bg-coffee { background: #3B2E24; }
+    .ctx-cell span {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.3px;
+    }
+
+    /* ===================================================
+       PIXEL GRID ANATOMY
+       =================================================== */
+    .anatomy-wrap {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .anatomy-icon {
+      flex-shrink: 0;
+    }
+    .anatomy-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+      .icon-grid { grid-template-columns: 1fr; }
+      .context-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Coffeetosh <span>Menu Bar Icon</span></h1>
+    <p>Coffee cup · Macintosh pixel face · ON / OFF states</p>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      Toggle Light / Dark
+    </button>
+  </div>
+
+  <!-- ─── MENU BAR PREVIEW ─────────────────────────── -->
+  <div class="section-label">Menu Bar Preview</div>
+  <div class="card">
+    <!-- OFF state menu bar -->
+    <div class="section-label" style="font-size:9px; margin-bottom:8px;">Inactive — sleep prevention OFF</div>
+    <div class="menubar-demo">
+      <span class="menubar-label">Fri 10:41 AM</span>
+      <!-- other system icons (decorative) -->
+      <div class="menubar-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="3" width="10" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none" opacity="0.5"/>
+          <rect x="12.5" y="5" width="1.5" height="2" rx="0.5" fill="currentColor" opacity="0.4"/>
+          <rect x="2.8" y="4" width="5" height="4" rx="0.5" fill="currentColor" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="menubar-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 2 L7 12 M3 5 Q7 2 11 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </div>
+      <!-- COFFEETOSH — OFF = outline cup only -->
+      <div class="menubar-item active-item" title="Coffeetosh — Inactive">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cup body outline + handle -->
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+          <!-- Handle -->
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          <!-- Rim lip (top edge detail) -->
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="currentColor" stroke-width="0.6" opacity="0.45"/>
+        </svg>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+
+    <!-- ON state menu bar -->
+    <div class="section-label" style="font-size:9px; margin-bottom:8px;">Active — sleep prevention ON</div>
+    <div class="menubar-demo">
+      <span class="menubar-label">Fri 10:41 AM</span>
+      <div class="menubar-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="3" width="10" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none" opacity="0.5"/>
+          <rect x="12.5" y="5" width="1.5" height="2" rx="0.5" fill="currentColor" opacity="0.4"/>
+          <rect x="2.8" y="4" width="5" height="4" rx="0.5" fill="currentColor" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="menubar-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 2 L7 12 M3 5 Q7 2 11 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </div>
+      <!-- COFFEETOSH — ON = filled cup with Mac face -->
+      <div class="menubar-item active-item" title="Coffeetosh — Active">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cup body — filled -->
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                fill="currentColor"/>
+          <!-- Handle — filled outline -->
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+          <!-- Rim lip -->
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="var(--bg-card)" stroke-width="0.7" opacity="0.4"/>
+          <!-- ── Macintosh pixel face ── -->
+          <!-- Left eye -->
+          <rect x="6.2" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Right eye -->
+          <rect x="11.4" y="7.5" width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Nose (single rect, center) -->
+          <rect x="9.5" y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Smile — pixel art: two outer corners + inner bar -->
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- State chips -->
+    <div class="menubar-meta">
+      <div class="menubar-row">
+        <span>Inactive</span>
+        <div class="state-chip off">⚬ Sleep prevention off</div>
+      </div>
+      <div class="menubar-row">
+        <span>Active</span>
+        <div class="state-chip on">● Keep Awake · 3h 22m</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ICON STATES SHOWCASE ─────────────────────── -->
+  <div class="section-label">Icon States — Large View</div>
+  <div class="card">
+    <div class="icon-grid">
+      <!-- OFF state -->
+      <div class="icon-cell">
+        <div class="icon-cell-label">OFF — Outline</div>
+        <svg width="72" height="72" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="var(--text-primary)" stroke-width="0.6" opacity="0.4"/>
+        </svg>
+        <div class="icon-cell-desc">No fill. Stroke only. Sleep prevention inactive — machine sleeps normally.</div>
+      </div>
+
+      <!-- ON state -->
+      <div class="icon-cell">
+        <div class="icon-cell-label">ON — Filled + Face</div>
+        <svg width="72" height="72" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cup body filled -->
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                fill="var(--text-primary)"/>
+          <!-- Handle -->
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+          <!-- Rim -->
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="var(--bg-card)" stroke-width="0.7" opacity="0.35"/>
+          <!-- Left eye -->
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Right eye -->
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Nose -->
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Smile corners -->
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+          <!-- Smile inner bar -->
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+        </svg>
+        <div class="icon-cell-desc">Full fill + pixel face. Sleep prevention active — Mac stays awake.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SIZE SCALE ───────────────────────────────── -->
+  <div class="section-label">Size Scale</div>
+  <div class="card">
+    <div style="margin-bottom:18px;">
+      <div class="section-label" style="margin-bottom:12px;">OFF State — all sizes</div>
+      <div class="sizes-row">
+        <div class="size-item">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>12px</span>
+        </div>
+        <div class="size-item">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>16px</span>
+        </div>
+        <div class="size-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>20px</span>
+        </div>
+        <div class="size-item">
+          <svg width="32" height="32" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>32px</span>
+        </div>
+        <div class="size-item">
+          <svg width="48" height="48" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>48px</span>
+        </div>
+        <div class="size-item">
+          <svg width="64" height="64" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>64px</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:12px;">ON State — all sizes</div>
+      <div class="sizes-row">
+        <div class="size-item">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>12px</span>
+        </div>
+        <div class="size-item">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>16px</span>
+        </div>
+        <div class="size-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>20px</span>
+        </div>
+        <div class="size-item">
+          <svg width="32" height="32" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>32px</span>
+        </div>
+        <div class="size-item">
+          <svg width="48" height="48" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>48px</span>
+        </div>
+        <div class="size-item">
+          <svg width="64" height="64" viewBox="0 0 20 20" fill="none">
+            <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="var(--text-primary)"/>
+            <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="var(--text-primary)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="var(--bg-card)"/>
+            <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="var(--bg-card)"/>
+          </svg>
+          <span>64px</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── LIVE TOGGLE ───────────────────────────────── -->
+  <div class="section-label">Interactive Toggle</div>
+  <div class="card">
+    <div class="toggle-demo">
+      <div class="toggle-preview" id="preview">
+        <!-- Will be set by JS to start in OFF state -->
+        <svg id="toggle-svg" width="56" height="56" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                stroke="var(--text-primary)" stroke-width="1.4" stroke-linejoin="round" fill="none"
+                id="cup-body"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="var(--text-primary)" stroke-width="1.4" stroke-linecap="round" fill="none"
+                id="cup-handle"/>
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="var(--text-primary)" stroke-width="0.6" opacity="0.4" id="cup-rim"/>
+          <!-- Face pixels (hidden in OFF state) -->
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" id="face-leye"  opacity="0"/>
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" id="face-reye"  opacity="0"/>
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" id="face-nose"  opacity="0"/>
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" id="face-sl"    opacity="0"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" id="face-sr"    opacity="0"/>
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" id="face-sm"    opacity="0"/>
+        </svg>
+      </div>
+      <p class="toggle-status" id="toggle-status">State: <strong>OFF</strong> — Sleep prevention inactive</p>
+      <button class="toggle-btn" id="toggle-btn" onclick="toggleState()">
+        Activate  ↑
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── CONTEXT TEST (light / dark backgrounds) ──── -->
+  <div class="section-label">Context: Light · Dark · Coffee</div>
+  <div class="card">
+    <div class="context-grid">
+      <!-- Dark bg — OFF -->
+      <div class="ctx-cell bg-dark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="#ffffff" stroke-width="1.4" fill="none"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span style="color:rgba(255,255,255,0.4);">Dark · OFF</span>
+      </div>
+      <!-- Dark bg — ON -->
+      <div class="ctx-cell bg-dark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="#ffffff"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#1c1c1e"/>
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#1c1c1e"/>
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="#1c1c1e"/>
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="#1c1c1e"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="#1c1c1e"/>
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="#1c1c1e"/>
+        </svg>
+        <span style="color:rgba(255,255,255,0.4);">Dark · ON</span>
+      </div>
+      <!-- Light bg — OFF -->
+      <div class="ctx-cell bg-light">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="#1c1c1e" stroke-width="1.4" fill="none"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#1c1c1e" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span style="color:rgba(0,0,0,0.4);">Light · OFF</span>
+      </div>
+      <!-- Light bg — ON -->
+      <div class="ctx-cell bg-light">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="#1c1c1e"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#1c1c1e" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#f5f5f5"/>
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#f5f5f5"/>
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="#f5f5f5"/>
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="#f5f5f5"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="#f5f5f5"/>
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="#f5f5f5"/>
+        </svg>
+        <span style="color:rgba(0,0,0,0.4);">Light · ON</span>
+      </div>
+      <!-- Coffee bg — OFF -->
+      <div class="ctx-cell bg-coffee">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" stroke="#F0E6D8" stroke-width="1.4" fill="none"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#F0E6D8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span style="color:rgba(240,230,216,0.45);">Coffee · OFF</span>
+      </div>
+      <!-- Coffee bg — ON -->
+      <div class="ctx-cell bg-coffee">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z" fill="#F0E6D8"/>
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14" stroke="#F0E6D8" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#3B2E24"/>
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#3B2E24"/>
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="#3B2E24"/>
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="#3B2E24"/>
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="#3B2E24"/>
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="#3B2E24"/>
+        </svg>
+        <span style="color:rgba(240,230,216,0.45);">Coffee · ON</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ANATOMY ───────────────────────────────────── -->
+  <div class="section-label">Icon Anatomy</div>
+  <div class="card">
+    <div class="anatomy-wrap">
+      <!-- Annotated SVG -->
+      <div class="anatomy-icon">
+        <svg width="140" height="140" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cup body filled (accent) -->
+          <path d="M4.5 5 Q4.5 3.5 6 3.5 L14 3.5 Q15.5 3.5 15.5 5 L14.5 16 Q14.2 17 13 17 L7 17 Q5.8 17 5.5 16 Z"
+                fill="#D4923A" opacity="0.9"/>
+          <!-- Handle -->
+          <path d="M15.5 8 Q19 8 19 11 Q19 14 15.5 14"
+                stroke="#D4923A" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.9"/>
+          <!-- Rim -->
+          <line x1="4.5" y1="6" x2="15.5" y2="6" stroke="rgba(255,255,255,0.3)" stroke-width="0.7"/>
+          <!-- Left eye — accent light -->
+          <rect x="6.2"  y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#2A2019"/>
+          <!-- Right eye -->
+          <rect x="11.4" y="7.5"  width="2.4" height="1.8" rx="0.2" fill="#2A2019"/>
+          <!-- Nose -->
+          <rect x="9.5"  y="10.2" width="1.0" height="1.8" rx="0.2" fill="#2A2019"/>
+          <!-- Smile L -->
+          <rect x="6.2"  y="13.0" width="1.8" height="1.6" rx="0.2" fill="#2A2019"/>
+          <!-- Smile R -->
+          <rect x="12.0" y="13.0" width="1.8" height="1.6" rx="0.2" fill="#2A2019"/>
+          <!-- Smile Mid -->
+          <rect x="8.0"  y="14.2" width="4.0" height="1.4" rx="0.2" fill="#2A2019"/>
+        </svg>
+      </div>
+      <!-- Legend -->
+      <div class="anatomy-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#D4923A;"></div>
+          Cup body — filled on active, stroke only when inactive
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#D4923A; border: 2px solid #D4923A; background: transparent;"></div>
+          Handle — always stroke, same weight
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--text-primary);"></div>
+          Eyes × 2 — pixel rect, 2.4 × 1.8 units
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--text-primary);"></div>
+          Nose — pixel rect, 1.0 × 1.8 units, center
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--text-primary); border-radius: 0;"></div>
+          Smile — 2 corner squares + 1 inner bar
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--border-strong); border-radius:50%;"></div>
+          Rim line — 0.7 stroke, 35% opacity
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================
+     TOGGLE LOGIC
+     =================================================== -->
+<script>
+  let active = false;
+
+  const body   = document.getElementById('cup-body');
+  const handle = document.getElementById('cup-handle');
+  const rim    = document.getElementById('cup-rim');
+  const faceEls = ['face-leye','face-reye','face-nose','face-sl','face-sr','face-sm'].map(id => document.getElementById(id));
+  const btn    = document.getElementById('toggle-btn');
+  const status = document.getElementById('toggle-status');
+  const preview = document.getElementById('preview');
+
+  function toggleState() {
+    active = !active;
+
+    if (active) {
+      // Fill the cup
+      body.setAttribute('fill', 'var(--text-primary)');
+      body.setAttribute('stroke', 'none');
+      body.setAttribute('stroke-width', '0');
+      // Show face pixels
+      faceEls.forEach(el => {
+        el.setAttribute('fill', 'var(--bg-card)');
+        el.style.opacity = '1';
+      });
+      // Rim becomes subtle inverse
+      rim.setAttribute('stroke', 'var(--bg-card)');
+      rim.setAttribute('opacity', '0.3');
+      // Handle stays
+      handle.setAttribute('stroke', 'var(--text-primary)');
+      handle.setAttribute('stroke-width', '1.6');
+
+      btn.textContent = 'Deactivate  ↓';
+      status.innerHTML = 'State: <strong>ON</strong> — Keep Awake active';
+      preview.style.boxShadow = '0 0 0 2px rgba(212,146,58,0.3), var(--shadow-lg)';
+    } else {
+      // Back to outline
+      body.setAttribute('fill', 'none');
+      body.setAttribute('stroke', 'var(--text-primary)');
+      body.setAttribute('stroke-width', '1.4');
+      // Hide face pixels
+      faceEls.forEach(el => {
+        el.style.opacity = '0';
+      });
+      rim.setAttribute('stroke', 'var(--text-primary)');
+      rim.setAttribute('opacity', '0.4');
+      handle.setAttribute('stroke-width', '1.4');
+
+      btn.textContent = 'Activate  ↑';
+      status.innerHTML = 'State: <strong>OFF</strong> — Sleep prevention inactive';
+      preview.style.boxShadow = '';
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffeetosh Menu Bar Icons</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .showcase {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .menubar-simulation {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 4px 14px;
+            border-radius: 6px;
+            display: inline-flex;
+            gap: 24px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Essential SVG Styling */
+        .coffeetosh-icon {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .state-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .icon-large {
+            width: 64px;
+            height: 64px;
+        }
+
+        /* Animation Keyframes and Classes */
+        .liquid-rise {
+            animation: fluid-rise 5s ease-in-out infinite;
+        }
+
+        .liquid-wave {
+            transform-origin: 11px 18px;
+            animation: fluid-wave 5s ease-in-out infinite;
+        }
+
+        .animated-cup-group {
+            transform-origin: 11px 21.5px;
+            animation: cup-bounce 5s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+        }
+
+        .droplet {
+            opacity: 0;
+            transform-origin: 0 0;
+        }
+        
+        .droplet-1 {
+            animation: drop-1 5s infinite linear;
+        }
+        
+        .droplet-2 {
+            animation: drop-2 5s infinite linear;
+        }
+        
+        .droplet-3 {
+            animation: drop-3 5s infinite linear;
+        }
+
+        /* Smoothly rise the liquid up from bottom to top using translation */
+        @keyframes fluid-rise {
+            0%, 15% { transform: translateY(21px); }
+            45%, 75% { transform: translateY(0px); }
+            90%, 100% { transform: translateY(21px); }
+        }
+
+        /* Slosh back and forth smoothly with slight horizontal flow */
+        @keyframes fluid-wave {
+            0%, 35% { transform: rotate(0deg) translateX(0px); }
+            40% { transform: rotate(-5deg) translateX(-3px); }
+            45% { transform: rotate(4deg) translateX(2px); }
+            50% { transform: rotate(-2deg) translateX(-1px); }
+            55%, 100% { transform: rotate(0deg) translateX(0px); }
+        }
+
+        /* Squishy cup settle effect when filled */
+        @keyframes cup-bounce {
+            0%, 40% { transform: scale(1, 1); }
+            43% { transform: scale(1.05, 0.95) translateY(1px); }
+            47% { transform: scale(0.97, 1.03) translateY(-0.5px); }
+            52% { transform: scale(1.01, 0.99) translateY(0.2px); }
+            57%, 100% { transform: scale(1, 1) translateY(0px); }
+        }
+
+        /* Droplet trajectories with true physics (arcs, stretching, gravity) */
+        @keyframes drop-1 {
+            0%, 41% { opacity: 0; transform: translate(5px, 6px) scale(0) rotate(-30deg); }
+            42% { opacity: 1; transform: translate(3px, 1px) scale(0.8, 1.4) rotate(-30deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+            47% { opacity: 1; transform: translate(-3px, -3px) scale(1.1, 0.9) rotate(-60deg); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            53% { opacity: 0.9; transform: translate(-6px, 5px) scale(0.7, 1.5) rotate(-45deg); }
+            55% { opacity: 0; transform: translate(-7px, 8px) scale(0); }
+            100% { opacity: 0; }
+        }
+
+        @keyframes drop-2 {
+            0%, 42% { opacity: 0; transform: translate(17px, 6px) scale(0) rotate(30deg); }
+            43% { opacity: 1; transform: translate(19px, 1px) scale(0.7, 1.3) rotate(30deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+            48% { opacity: 1; transform: translate(25px, -2px) scale(1.1, 0.9) rotate(60deg); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            54% { opacity: 0.9; transform: translate(29px, 5px) scale(0.7, 1.4) rotate(45deg); }
+            56% { opacity: 0; transform: translate(30px, 8px) scale(0); }
+            100% { opacity: 0; }
+        }
+
+        @keyframes drop-3 {
+            0%, 44% { opacity: 0; transform: translate(11px, 6px) scale(0) rotate(10deg); }
+            45% { opacity: 1; transform: translate(11.5px, 0px) scale(0.6, 1.1) rotate(10deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+            50% { opacity: 1; transform: translate(13px, -4px) scale(0.9, 0.7) rotate(30deg); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            56% { opacity: 0.9; transform: translate(15px, 3px) scale(0.5, 1.1) rotate(20deg); }
+            58% { opacity: 0; transform: translate(16px, 6px) scale(0); }
+            100% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="showcase">
+        <h2>Coffeetosh Menu Bar Icon</h2>
+        <p style="color: #aaa; font-size: 14px; max-width: 400px; margin: 0 auto;">
+            Combined concept: Classic outline coffee cup with the classic Macintosh face inside.
+        </p>
+
+        <div class="grid">
+            <!-- OFF STATE: Outline Cup, Filled Face -->
+            <div>
+                <div class="state-label">OFF State (Outline)</div>
+                <svg class="coffeetosh-icon icon-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- Cup Outline -->
+                        <path d="M2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5" />
+                        <!-- Cup Top Ellipse -->
+                        <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" />
+                        <!-- Cup Handle -->
+                        <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" />
+                        
+                        <!-- Smooth Face -->
+                        <!-- Eyes -->
+                        <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                        <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                        <!-- Nose -->
+                        <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                        <!-- Smile -->
+                        <path d="M8 16 Q 11 18.5 14 16" />
+                    </g>
+                </svg>
+            </div>
+
+            <!-- ON STATE: Filled Cup, Cutout Face -->
+            <div>
+                <div class="state-label">ON State (Filled)</div>
+                <svg class="coffeetosh-icon icon-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <mask id="face-mask">
+                            <!-- Background to keep -->
+                            <rect x="0" y="0" width="24" height="24" fill="white" />
+                            <!-- Face parts to cut out (black) thinner strokes -->
+                            <g fill="none" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- Eyes -->
+                                <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                                <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                                <!-- Nose -->
+                                <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                                <!-- Smile -->
+                                <path d="M8 16 Q 11 18.5 14 16" />
+                            </g>
+                        </mask>
+                    </defs>
+
+                    <!-- Cup Handle Outline -->
+                    <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    
+                    <!-- Solid Cup Body with Face Masked Out, top edge curved down -->
+                    <path d="M 2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5 A 8.5 2.8 0 0 1 2.5 5.5 Z" fill="currentColor" mask="url(#face-mask)" />
+                    
+                    <!-- Outline only for Top Ellipse to show empty/dark lid -->
+                    <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.3" />
+                </svg>
+            </div>
+        </div>
+
+        <br><br>
+        
+        <div style="margin-top: 20px;">
+            <div class="state-label">Animated Fill & Spill</div>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 30px 50px; border-radius: 12px; display: inline-block;">
+                <svg class="coffeetosh-icon icon-large" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
+                    <defs>
+                        <mask id="face-mask-anim">
+                            <rect x="0" y="0" width="24" height="24" fill="white" />
+                            <!-- Use black to punch holes in the white rect -->
+                            <g fill="none" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                                <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                                <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                                <path d="M8 16 Q 11 18.5 14 16" />
+                            </g>
+                        </mask>
+                        <clipPath id="cup-clip">
+                            <!-- EXACT cup body path mathematically matched so there's zero bleed -->
+                            <path d="M 2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5 A 8.5 2.8 0 0 1 2.5 5.5 Z" />
+                        </clipPath>
+                    </defs>
+
+                    <g class="animated-cup-group">
+                        <!-- Static Face drawn BEFORE the liquid so it gets covered by the dark fluid layer -->
+                        <g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                            <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                            <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                            <path d="M8 16 Q 11 18.5 14 16" />
+                        </g>
+
+                        <!-- Liquid Fill Masked -->
+                        <g clip-path="url(#cup-clip)">
+                            <!-- A static dark layer under the liquid to ensure the face cutouts remain pitch dark natively -->
+                            <g class="liquid-rise">
+                                <g class="liquid-wave">
+                                    <path d="M -15 5 Q -4 0 7 5 T 29 5 T 51 5 L 51 32 L -15 32 Z" fill="#1e1e1e" />
+                                </g>
+                            </g>
+
+                            <!-- White fluid that is clipped by the face mask so the dark shows through -->
+                            <g mask="url(#face-mask-anim)">
+                                <g class="liquid-rise">
+                                    <g class="liquid-wave">
+                                        <path d="M -15 5 Q -4 0 7 5 T 29 5 T 51 5 L 51 32 L -15 32 Z" fill="currentColor" />
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+
+                        <!-- Static Empty outline Drawn AFTER the liquid so it overlaps and hugs it perfectly -->
+                        <g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Base Outlines -->
+                            <path d="M2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5" />
+                            <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" />
+                        </g>
+                        
+                        <!-- Top Lid Outline drawn over everything -->
+                        <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.3" />
+
+                        <!-- Enhanced Spilling Droplets (Teardrop Shaped) -->
+                        <path d="M 0,-2 C 1,-0.5 1.6,0.5 1.6,1.5 A 1.6,1.6 0 0 1 -1.6,1.5 C -1.6,0.5 -1,-0.5 0,-2 Z" fill="currentColor" class="droplet droplet-1" />
+                        <path d="M 0,-2 C 1,-0.5 1.4,0.5 1.4,1.4 A 1.4,1.4 0 0 1 -1.4,1.4 C -1.4,0.5 -1,-0.5 0,-2 Z" fill="currentColor" class="droplet droplet-2" />
+                        <path d="M 0,-2 C 1,-0.5 1,0.5 1,1 A 1,1 0 0 1 -1,1 C -1,0.5 -1,-0.5 0,-2 Z" fill="currentColor" class="droplet droplet-3" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <br><br>
+        <div class="state-label" style="margin-top: 20px;">Menu Bar Preview</div>
+        <div class="menubar-simulation">
+            <div class="menu-item">
+                <!-- OFF icon at native scale -->
+                <svg class="coffeetosh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5" />
+                        <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" />
+                        <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" />
+                        <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                        <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                        <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                        <path d="M8 16 Q 11 18.5 14 16" />
+                    </g>
+                </svg>
+                OFF
+            </div>
+            
+            <div class="menu-item">
+                <!-- ON icon at native scale -->
+                <svg class="coffeetosh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <mask id="face-mask-small">
+                            <rect x="0" y="0" width="24" height="24" fill="white" />
+                            <g fill="none" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="10.5" x2="8" y2="12.5" />
+                                <line x1="14" y1="10.5" x2="14" y2="12.5" />
+                                <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1" />
+                                <path d="M8 16 Q 11 18.5 14 16" />
+                            </g>
+                        </mask>
+                    </defs>
+                    <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M 2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5 A 8.5 2.8 0 0 1 2.5 5.5 Z" fill="currentColor" mask="url(#face-mask-small)" />
+                    <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.3" />
+                </svg>
+                ON
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
