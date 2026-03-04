@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.coffeetosh.cleanup</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__CLEANUP_PATH__</string>
+    </array>
+
+    <!-- Run once at login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Don't keep alive — one-shot cleanup -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Log output for debugging -->
+    <key>StandardOutPath</key>
+    <string>/tmp/coffeetosh-cleanup.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/coffeetosh-cleanup.log</string>
+</dict>
+</plist>

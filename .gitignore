@@ -1,0 +1,43 @@
+# ── Swift / SPM ──────────────────────────────────────────────
+.build/
+.swiftpm/
+Package.resolved
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+
+# ── Xcode ────────────────────────────────────────────────────
+DerivedData/
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── macOS ────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+__MACOSX/
+
+# ── IDE ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Build Artifacts ──────────────────────────────────────────
+*.dmg
+*.app
+*.zip
+
+# ── Junk folder (project scratch) ───────────────────────────
+JUNK/
