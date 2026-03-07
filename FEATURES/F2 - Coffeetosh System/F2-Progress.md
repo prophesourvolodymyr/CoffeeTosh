@@ -121,3 +121,21 @@
 ## 🆕 PHASE 11: Bug Fix Sprint — CLI History & Analytics Sync
 
 - [x] **CLI stop race condition (history not recorded):** `handleStop()` sent SIGTERM via `DaemonLauncher.stop()` and then immediately called `StatusFileManager.markInactive()`. Because `markInactive()` could win the race before the daemon processed SIGTERM, the daemon's `SleepManager.restore()` guard (`fileActive=false`) skipped history recording silently. **Fix:** CLI now records the session history itself (it has all data from the initial `status` read at the top of `handleStop()`) BEFORE calling `markInactive()` and BEFORE sending SIGTERM. The daemon's `restore()` still correctly runs deactivation cleanup (`isActive=true` in-memory), but its `status.active` guard skips the duplicate history write. This guarantees exactly one history entry regardless of signal timing.
+
+---
+
+## 🆕 PHASE 12: Lid Open Security — OS Lock + Session Overlay
+
+*Protect the unlocked desktop when someone opens the lid during an active Lid Closed session.*
+
+### Daemon: OS-Level Lock on Lid Open
+- [x] In `daemon/main.swift`, `case .opened` block: run `CGSession -suspend` as a shell command to instantly trigger the real macOS lock screen.
+- [x] Only lock if the session is still active and mode is `.headless` (already scoped, no extra check needed).
+- [x] Log the lock action: `[coffeetosh-daemon] 🔒 Lid opened during session — locking screen`.
+
+### GUI: "Session Still Running" Overlay After Unlock
+- [x] Add `lidOpenedDuringSession: Bool` field to `CoffeetoshStatus` (written by daemon on lid-open transition).
+- [x] In `ContentView`, observe `lidOpenedDuringSession` flag via `.onChange` and `.onAppear`.
+- [x] When flag is `true` and session is active: present inline overlay in the timer block with two buttons — **Stop** and **Continue**.
+- [x] "Continue" clears the flag in `status.json` and dismisses. "Stop" calls the normal stop flow.
+- [x] Daemon writes `lidOpenedDuringSession = true` on lid-open and clears brightness (one-shot — consumed by GUI on next popover open).

@@ -130,16 +130,24 @@ while true {
             BrightnessHelper.setMinimum()
 
         case .opened:
-            print("[coffeetosh-daemon] 🔓 Lid opened — restoring brightness")
+            print("[coffeetosh-daemon] 🔓 Lid opened during Lid Closed session — locking screen")
+
+            // Lock the Mac immediately via CGSession so no one can access the
+            // desktop without the user's macOS password. This is real OS-level
+            // security, not a custom overlay that can be bypassed by killing the app.
+            _ = ShellHelper.run("/System/Library/CoreServices/Menu\\ Extras/User.menu/Contents/Resources/CGSession -suspend")
+
             // Restore brightness from what we saved on lid close
             if let original = current.originalBrightness {
                 _ = BrightnessHelper.setBuiltInBrightnessPublic(original)
                 print("[coffeetosh-daemon] 🔆 Brightness restored to \(String(format: "%.1f%%", original * 100))")
             }
-            // Update lid state in status.json
+
+            // Write lid state + one-shot flag so the GUI can show the overlay
             var s = current
             s.lidClosed = false
-            s.originalBrightness = nil  // Clear — brightness is restored
+            s.originalBrightness = nil
+            s.lidOpenedDuringSession = true   // GUI consumes this and clears it
             try? StatusFileManager.write(s)
 
         case .unchanged:

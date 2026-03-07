@@ -40,7 +40,7 @@ Before questions, here's what I locked in from N1 + codebase:
 > 5. Subheadline / CTA fades in below
 
 **✏️ Your answer:**
-
+Yes tahts exactly correct. 
 ---
 
 #### Q2: The Laptops & Phones — Style
@@ -48,14 +48,15 @@ Before questions, here's what I locked in from N1 + codebase:
 **Unclear:** How many phones max? (I'm thinking 2–3 is readable)
 
 **✏️ Your answer:**
-
+LAptop must be in a normal black and white colorn make with , make super its not realistically 3d but carttoning - no shaders. 2D like but 3d. 
+3 phones.
 ---
 
 #### Q3: Hero Background
 **Unclear:** Is the hero background pure Espresso Dark (`#1A1310`) flat? Or does it have a subtle shader/noise/grain texture? N1 mentions WebGL+Three.js in the prompt format reference — should we use a subtle WebGL background on the hero?
 
 **✏️ Your answer:**
-
+We can use Web GL + Three JS, but the background can stay normal, if you wanna make something custom do taht.
 ---
 
 #### Q4: Hero CTA Button
@@ -65,14 +66,15 @@ Before questions, here's what I locked in from N1 + codebase:
 - C) No button — the hero is pure visual, the user scrolls naturally?
 
 **✏️ Your answer:**
-
+LOK, I just got an idea of something lets do this:
+When pople went on the page for the first time form history, when they try to hover on downloand button then will take them to downlaond page, taht button will basically move from their cursol, nad text will chnag eon something bfunny like, Learn First or somethng more playfull. that button, must move to its normal position when cursor went away.
 ---
 
 #### Q5: Hero Tagline vs Subtext
 **Unclear:** Is "Addicting your mac to stay alive" the ONLY hero text, or is there a short 1-line subtitle below it (e.g., "The open-source sleep preventer for macOS")?
 
 **✏️ Your answer:**
-
+Sure if there will be a place.
 ---
 
 ### ✨ SECTION 2 — FEATURES (GSAP Pinned Scroll)
@@ -83,7 +85,7 @@ Before questions, here's what I locked in from N1 + codebase:
 **Unclear:** Does the dock float in the center of the viewport or sit at the bottom (like macOS)?
 
 **✏️ Your answer:**
-
+Like MAc OS yes.
 ---
 
 #### Q7: Feature Point 1 — "Full Menu Shows Up" After Option+Click
@@ -93,7 +95,7 @@ Before questions, here's what I locked in from N1 + codebase:
 - C) Should we mock it in real HTML/CSS as a live UI element?
 
 **✏️ Your answer:**
-
+Yes popover UI, composition must zoom out when that appeared to capture it.
 ---
 
 #### Q8: Feature Point 1 — Congrats Button Text
@@ -106,7 +108,7 @@ Before questions, here's what I locked in from N1 + codebase:
 - D) You tell me
 
 **✏️ Your answer:**
-
+They gonna change, but all of the buttons gonna give conveti, there cannot be one text line throghout 4 animatuion.
 ---
 
 #### Q9: Feature Point 2 — Terminal Visual Style
@@ -120,14 +122,14 @@ Before questions, here's what I locked in from N1 + codebase:
 > coffeetosh stop
 > coffeetosh status
 > coffeetosh start 8
-> coffeetosh start 2 --mode keep-awake
+> coffeetosh start 2 --lowbattery -user updated
 > coffeetosh preset set headless 4
 > ```
 
 **Unclear:** Should each command be typed out with a typewriter effect as the GSAP animation progresses? Or are they all visible at once in the static terminal mockup?
 
 **✏️ Your answer:**
-
+Exactly. ANd yes there is an terminal style in the CLI guide , but it is on SWIFT.
 ---
 
 #### Q10: Feature Point 2 — The "Docs" Button
@@ -136,7 +138,7 @@ Before questions, here's what I locked in from N1 + codebase:
 **Unclear:** Button label — "See All Commands →"? "Open Docs →"? "Read the Docs 📖"?
 
 **✏️ Your answer:**
-
+Read the docks
 ---
 
 #### Q11: Feature Point 2 — Congrats Button Text
@@ -146,7 +148,7 @@ Following the "silly" pattern from N1:
 - C) You tell me
 
 **✏️ Your answer:**
-
+I answered the pattern below.
 ---
 
 #### Q12: Feature Point 3 — Dashboard Visual
@@ -156,7 +158,7 @@ Following the "silly" pattern from N1:
 **Unclear:** What's the confetti button text for Point 3? Does the "silly" rule still apply to Point 3, or only Points 1 & 2?
 
 **✏️ Your answer:**
-
+yes still applies to point 3.
 ---
 
 #### Q13: GSAP Section — Overall Background
@@ -180,7 +182,7 @@ Following the "silly" pattern from N1:
 Is this the right interpretation? Or should it actually start at HIGH and spin DOWN to $0/FREE?
 
 **✏️ Your answer:**
-
+Yes tahts beautifully right.
 ---
 
 #### Q15: Pricing Card — Benefits List
@@ -195,14 +197,14 @@ Is this the right interpretation? Or should it actually start at HIGH and spin D
 Should I use these or do you want to write them yourself?
 
 **✏️ Your answer:**
-
+YEs those but no emoji. Decrease the emoji throghot the websote by the way, put them only where needed.
 ---
 
 #### Q16: Pricing — GitHub CTA
 **Unclear:** After the free reveal, is there a "Star us on GitHub ⭐" or "Get it Free →" button on the pricing card?
 
 **✏️ Your answer:**
-
+There is downloand and yes star on github button. And if the user scrolls down, it will be downloand section etaherway.
 ---
 
 ### 📥 SECTION 4 — DOWNLOAD (HOMEPAGE SECTION)
@@ -214,19 +216,19 @@ Should I use these or do you want to write them yourself?
 - C) Something else (tap + install)?
 
 **✏️ Your answer:**
-
+A
 ---
 
 #### Q18: Download Button — Apple Direct
 **Unclear:** Does the direct .dmg/.zip download link exist yet, or is it a placeholder? GitHub Releases link?
 
 **✏️ Your answer:**
-
+placeholder
 ---
 
 #### Q19: System Requirements
 **Confirmed from R1:** macOS 13 Ventura minimum. Should this be displayed alongside the download buttons?
-
+yes + apple logo as I mentioned must be.
 **✏️ Your answer:**
 
 ---
@@ -240,7 +242,7 @@ Should I use these or do you want to write them yourself?
 - C) Something else?
 
 **✏️ Your answer:**
-
+Actually nothing for not only the git start button taht I have explain to you
 ---
 
 #### Q21: Nav Logo Text
@@ -249,14 +251,14 @@ Should I use these or do you want to write them yourself?
 **Unclear:** Should the logo animation in the nav loop infinitely or only play once on page load?
 
 **✏️ Your answer:**
-
+Loop, lets try this fist.
 ---
 
 #### Q22: Nav CTA Button
 **Unclear:** Should the nav have a right-side CTA button like "Download" or "Get for Mac"? Many Mac app sites do this.
 
 **✏️ Your answer:**
-
+Start on github, and count of the start(UI placeholder right now, erest git API for later.)
 ---
 
 ### 🦶 FOOTER
@@ -272,7 +274,7 @@ Should I use these or do you want to write them yourself?
 **My proposal:** CSS-animated SVG path of a coffee drip line running across the top edge of the footer, dripping down. Clean, matches the brand, low-overhead. Confirm?
 
 **✏️ Your answer:**
-
+Oh yeah so, the whole websote is in brown coffe right? the footer itself will be in our white latte color, and on the pop this kind of droplets waves gonna form, and thsts what will be hapening. 
 ---
 
 #### Q24: Footer Links
@@ -281,7 +283,7 @@ Proposal: Home · Download · Docs · GitHub
 Any social links (Twitter/X)? Any copyright year?
 
 **✏️ Your answer:**
-
+those all
 ---
 
 ### 📄 STANDALONE PAGES
@@ -298,7 +300,7 @@ Any social links (Twitter/X)? Any copyright year?
 > With a `[Copy]` button on each block.
 
 **✏️ Your answer:**
-
+Explain everything - thn e process etch command and tahts all.
 ---
 
 #### Q26: Download Page — Difference from Section 4
@@ -306,7 +308,7 @@ Any social links (Twitter/X)? Any copyright year?
 **Unclear:** Is the standalone `/download.html` **identical** to Section 4 of the homepage? Or does it have more detail (installation instructions, changelog, system reqs)?
 
 **✏️ Your answer:**
-
+Yes it will explain more.
 ---
 
 ## 💡 AMBITIOUS IDEAS (Nothing Is Impossible)
@@ -318,7 +320,7 @@ Any social links (Twitter/X)? Any copyright year?
 **User Benefit:** Instantly sets the "coffee" mood without being heavy-handed.
 **Technical Approach:** Three.js `ParticleSystem` or GLSL vertex shader with upward drift + opacity falloff. ~200 particles max.
 **Complexity:** Medium
-
+Sure lets try it fir the home page.
 ---
 
 ### Idea 2: "Live Status" Badge in Hero
@@ -326,7 +328,7 @@ Any social links (Twitter/X)? Any copyright year?
 **User Benefit:** Immediately makes the product feel real and active to a new visitor.
 **Technical Approach:** Pure CSS animation — pulsing dot with `animation: pulse` on the amber color. No JS needed.
 **Complexity:** Low
-
+Les Absoolutly.
 ---
 
 ### Idea 3: Terminal Section Has Real Typing Animation
@@ -334,7 +336,7 @@ Any social links (Twitter/X)? Any copyright year?
 **User Benefit:** More engaging than static text. Creates the "oh this is actually real" moment.
 **Technical Approach:** GSAP `TextPlugin` + `gsap.timeline()` stagger. Each command types out when its position is entered.
 **Complexity:** Low (GSAP native)
-
+Yes absolutly
 ---
 
 ### Idea 4: Ambient Coffee Cup SVG in Section Dividers
@@ -342,7 +344,7 @@ Any social links (Twitter/X)? Any copyright year?
 **User Benefit:** Consistent brand storytelling between sections.
 **Technical Approach:** Inline SVG with CSS animation on the steam path.
 **Complexity:** Low
-
+Sure 
 ---
 
 ### Idea 5: macOS-style Window Chrome in Dashboard Demo
@@ -350,7 +352,7 @@ Any social links (Twitter/X)? Any copyright year?
 **User Benefit:** Immediate recognition — "oh this is an actual Mac app."
 **Technical Approach:** `div` with CSS-crafted macOS window styling.
 **Complexity:** Low
-
+Yes window stysling of mac
 ---
 
 ### Idea 6: GitHub Stars Counter in Footer
@@ -360,6 +362,7 @@ Any social links (Twitter/X)? Any copyright year?
 **Complexity:** Low (simple fetch)
 **Note:** Only use repo's confirmed GitHub URL — confirm this first.
 
+told you sometwhere about this.
 ---
 
 ### Idea 7: "Brew Copy" Interactive Terminal Block in Nav
@@ -368,17 +371,11 @@ Any social links (Twitter/X)? Any copyright year?
 **Technical Approach:** Fixed-position mini card, appears with GSAP `fromTo` after hero exits viewport.
 **Complexity:** Low
 
+
+NO
 ---
 
-## 🔗 FEATURE EXTENSION IDEAS
 
-**New Components to Consider:**
-- [ ] **GitHub Badge component:** "Open Source · MIT License" badge on the pricing card
-- [ ] **OG/Social Meta tags:** Custom Open Graph image (animated logo on dark bg) for link preview when shared on Twitter/Slack
-- [ ] **Mobile Responsive Fallback:** GSAP pinned scroll may not work well on mobile — consider a simplified card-stack fallback for screens < 768px
-- [ ] **README Banner:** The user mentioned "good banner & explanation in README" — a separate GitHub social preview image (`1280x640`) featuring the hero text and logo
-
----
 
 ## 🎨 OPEN TYOGRAPHY DECISION
 

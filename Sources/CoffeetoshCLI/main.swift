@@ -25,8 +25,8 @@ case "preset":
     handlePreset(args: Array(args.dropFirst(2)))
 case "battery":
     handleBattery()
-case "temp":
-    handleTemp()
+case "mac-temp", "temp":   // "temp" kept for backward compat
+    handleMacTemp()
 case "help", "--help", "-h":
     printUsage()
 default:
@@ -533,31 +533,29 @@ func handleBattery() {
 
 // MARK: - Temperature ────────────────────────────────────────────
 
-func handleTemp() {
-    // Try non-interactive sudo (uses cached token — no prompt, instant).
-    // If there's no cached token, sudo -n exits non-zero and returns nothing.
-    let raw = ShellHelper.run("sudo -n powermetrics --samplers smc -i1 -n1 2>/dev/null")
+func handleMacTemp() {
+    // Run powermetrics with inherited stdio so sudo can prompt for a password
+    // naturally in the terminal. No pipes — no silent failures, no quote issues.
+    print("Mac temperature (admin password may be required):")
 
-    if raw.isEmpty {
-        print("Temperature: unavailable.")
-        print("Run manually: sudo powermetrics --samplers smc -i1 -n1 | grep 'CPU die temperature'")
-        return
-    }
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+    process.arguments = ["-c",
+        "sudo powermetrics --samplers smc -i1 -n1 2>&1 | grep -E 'CPU die temperature|GPU die temperature'"
+    ]
+    // Inherit terminal stdio — lets sudo prompt interactively
+    process.standardInput  = FileHandle.standardInput
+    process.standardOutput = FileHandle.standardOutput
+    process.standardError  = FileHandle.standardError
 
-    var found = false
-    for line in raw.components(separatedBy: "\n") {
-        let l = line.lowercased()
-        if l.contains("cpu die") || l.contains("gpu die") {
-            if let tempRange = line.range(of: #"[\d.]+"#, options: .regularExpression) {
-                let name = line.components(separatedBy: ":").first?.trimmingCharacters(in: .whitespaces) ?? line
-                let value = String(line[tempRange])
-                print("\(name): \(value)°C")
-                found = true
-            }
+    do {
+        try process.run()
+        process.waitUntilExit()
+        if process.terminationStatus != 0 {
+            print("powermetrics exited with status \(process.terminationStatus)")
         }
-    }
-    if !found {
-        print("Temperature: could not parse output. Run: sudo powermetrics --samplers smc -i1 -n1")
+    } catch {
+        print("Failed to run powermetrics: \(error)")
     }
 }
 
@@ -579,7 +577,7 @@ func printUsage() {
       coffeetosh add [minutes]                      Add time to session (default: 30m)
       coffeetosh status                             Print current state
       coffeetosh battery                            Show battery %, source, time remaining
-      coffeetosh temp                               Show CPU/GPU temperature (needs admin)
+      coffeetosh mac-temp                           Show Mac CPU/GPU temperature (needs admin)
       coffeetosh preset                             Show saved Quick Preset
       coffeetosh preset set <mode> <duration>       Save a Quick Preset
       coffeetosh preset clear                       Remove saved preset

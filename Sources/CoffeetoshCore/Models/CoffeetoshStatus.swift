@@ -69,6 +69,11 @@ public struct CoffeetoshStatus: Codable {
     /// Current lid (clamshell) state — written by daemon on each tick.
     public var lidClosed: Bool?
 
+    /// One-shot flag: set by daemon when the lid is opened during an active
+    /// Lid Closed session. GUI reads it and shows a "Session still running" prompt.
+    /// Cleared by the GUI after it consumes the flag.
+    public var lidOpenedDuringSession: Bool?
+
     // ── Public Init ─────────────────────────────────────────────
     public init(
         active: Bool,
@@ -84,7 +89,8 @@ public struct CoffeetoshStatus: Codable {
         lastCheckTime: Date? = nil,
         lowPowerEnabled: Bool? = nil,
         originalBrightness: Float? = nil,
-        lidClosed: Bool? = nil
+        lidClosed: Bool? = nil,
+        lidOpenedDuringSession: Bool? = nil
     ) {
         self.active = active
         self.mode = mode
@@ -100,6 +106,7 @@ public struct CoffeetoshStatus: Codable {
         self.lowPowerEnabled = lowPowerEnabled
         self.originalBrightness = originalBrightness
         self.lidClosed = lidClosed
+        self.lidOpenedDuringSession = lidOpenedDuringSession
     }
 }
 
