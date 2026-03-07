@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffeetosh Animation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #2A2320; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<script>
+/* --- Rounded Box helper that does NOT inflate size --- */
+function makeRoundedBoxGeo(w, h, d, r) {
+    const shape = new THREE.Shape();
+    const hw = w / 2 - r, hh = h / 2 - r;
+    shape.moveTo(-hw, -h / 2);
+    shape.lineTo(hw, -h / 2);
+    shape.quadraticCurveTo(w / 2, -h / 2, w / 2, -hh);
+    shape.lineTo(w / 2, hh);
+    shape.quadraticCurveTo(w / 2, h / 2, hw, h / 2);
+    shape.lineTo(-hw, h / 2);
+    shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, hh);
+    shape.lineTo(-w / 2, -hh);
+    shape.quadraticCurveTo(-w / 2, -h / 2, -hw, -h / 2);
+    const geo = new THREE.ExtrudeGeometry(shape, {
+        depth: d, bevelEnabled: true,
+        bevelThickness: Math.min(r * 0.3, d * 0.3),
+        bevelSize: Math.min(r * 0.3, 0.02),
+        bevelSegments: 3
+    });
+    geo.center();
+    return geo;
+}
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3.2, 5.2);
+camera.lookAt(0, 0.4, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x2A2320);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+keyLight.position.set(3, 5, 4);
+keyLight.castShadow = true;
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0xccddee, 0.5);
+fillLight.position.set(-3, 3, 2);
+scene.add(fillLight);
+const rimLight = new THREE.DirectionalLight(0xffeedd, 0.4);
+rimLight.position.set(0, 2, -3);
+scene.add(rimLight);
+
+const sceneGroup = new THREE.Group();
+scene.add(sceneGroup);
+
+const silverMat = new THREE.MeshStandardMaterial({ color: 0xD5D5D7, metalness: 0.85, roughness: 0.25 });
+
+/* ==================== LAPTOP ==================== */
+const laptopGroup = new THREE.Group();
+sceneGroup.add(laptopGroup);
+
+const BW = 3.0, BD = 2.0, BH = 0.1;
+
+// --- Base ---
+const baseGeo = makeRoundedBoxGeo(BW, BD, BH, 0.15);
+const baseMesh = new THREE.Mesh(baseGeo, silverMat);
+baseMesh.rotation.x = -Math.PI / 2;
+baseMesh.position.y = BH / 2;
+baseMesh.castShadow = true;
+baseMesh.receiveShadow = true;
+laptopGroup.add(baseMesh);
+
+// --- Keyboard (canvas texture, placed ON TOP of base) ---
+const kbCanvas = document.createElement('canvas');
+kbCanvas.width = 520;
+kbCanvas.height = 240;
+const kc = kbCanvas.getContext('2d');
+kc.fillStyle = '#111111';
+kc.fillRect(0, 0, 520, 240);
+kc.fillStyle = '#2c2c2e';
+const kRows = [
+    { count: 14, y: 6, h: 28 },
+    { count: 14, y: 40, h: 28 },
+    { count: 13, y: 74, h: 28 },
+    { count: 12, y: 108, h: 28 },
+    { count: 0, y: 148, h: 28 }
+];
+for (const row of kRows) {
+    if (row.count === 0) {
+        const spaceKeys = [38, 38, 38, 190, 38, 38, 38, 38];
+        let cx = 12;
+        for (const w of spaceKeys) {
+            kc.beginPath();
+            kc.roundRect(cx, row.y, w, row.h, 4);
+            kc.fill();
+            cx += w + 5;
+        }
+    } else {
+        const gap = 4;
+        const totalGap = (row.count - 1) * gap;
+        const kw = (496 - totalGap) / row.count;
+        for (let k = 0; k < row.count; k++) {
+            kc.beginPath();
+            kc.roundRect(12 + k * (kw + gap), row.y, kw, row.h, 4);
+            kc.fill();
+        }
+    }
+}
+const kbTex = new THREE.CanvasTexture(kbCanvas);
+const kbGeo = new THREE.PlaneGeometry(2.5, 1.15);
+const kbMesh = new THREE.Mesh(kbGeo, new THREE.MeshBasicMaterial({ map: kbTex }));
+kbMesh.rotation.x = -Math.PI / 2;
+kbMesh.position.set(0, BH + 0.001, -0.2);
+laptopGroup.add(kbMesh);
+
+// --- Trackpad ---
+const tpCanvas = document.createElement('canvas');
+tpCanvas.width = 200;
+tpCanvas.height = 120;
+const tc = tpCanvas.getContext('2d');
+tc.fillStyle = '#111111';
+tc.fillRect(0, 0, 200, 120);
+tc.strokeStyle = '#333';
+tc.lineWidth = 2;
+tc.beginPath();
+tc.roundRect(6, 6, 188, 108, 10);
+tc.stroke();
+const tpTex = new THREE.CanvasTexture(tpCanvas);
+const tpGeo = new THREE.PlaneGeometry(0.85, 0.5);
+const tpMesh = new THREE.Mesh(tpGeo, new THREE.MeshBasicMaterial({ map: tpTex }));
+tpMesh.rotation.x = -Math.PI / 2;
+tpMesh.position.set(0, BH + 0.001, 0.5);
+laptopGroup.add(tpMesh);
+
+// --- Lid (pivot at back hinge) ---
+const lidPivot = new THREE.Group();
+lidPivot.position.set(0, BH, -BD / 2);
+laptopGroup.add(lidPivot);
+
+const LH = 2.05, LT = 0.07;
+const lidGroup = new THREE.Group();
+lidPivot.add(lidGroup);
+
+const lidGeo = makeRoundedBoxGeo(BW, LH, LT, 0.12);
+const lidMesh = new THREE.Mesh(lidGeo, silverMat);
+lidMesh.position.set(0, LH / 2, -LT / 2);
+lidMesh.castShadow = true;
+lidGroup.add(lidMesh);
+
+// --- Screen (inner face of lid, facing keyboard when open) ---
+const scrCanvas = document.createElement('canvas');
+scrCanvas.width = 640;
+scrCanvas.height = 420;
+const sc = scrCanvas.getContext('2d');
+const sg = sc.createRadialGradient(320, 210, 30, 320, 210, 340);
+sg.addColorStop(0, '#1a3a5a');
+sg.addColorStop(1, '#060e18');
+sc.fillStyle = sg;
+sc.fillRect(0, 0, 640, 420);
+sc.font = '90px serif';
+sc.textAlign = 'center';
+sc.textBaseline = 'middle';
+sc.fillText('\u2615', 320, 150);
+sc.font = 'bold 44px -apple-system, Helvetica, Arial, sans-serif';
+sc.fillStyle = '#D4923A';
+sc.shadowColor = '#D4923A';
+sc.shadowBlur = 20;
+sc.fillText('Coffeetosh', 320, 280);
+sc.shadowBlur = 0;
+const scrTex = new THREE.CanvasTexture(scrCanvas);
+
+const scrGeo = new THREE.PlaneGeometry(2.7, 1.8);
+const scrMesh = new THREE.Mesh(scrGeo, new THREE.MeshBasicMaterial({ map: scrTex }));
+scrMesh.position.set(0, LH / 2, 0.001);
+lidGroup.add(scrMesh);
+
+// --- Apple logo (back of lid) ---
+const alCanvas = document.createElement('canvas');
+alCanvas.width = 128;
+alCanvas.height = 128;
+const ac = alCanvas.getContext('2d');
+ac.clearRect(0, 0, 128, 128);
+ac.font = '80px -apple-system, "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+ac.textAlign = 'center';
+ac.textBaseline = 'middle';
+ac.fillStyle = '#ffffff';
+ac.fillText('\uF8FF', 64, 68);
+const alTex = new THREE.CanvasTexture(alCanvas);
+alTex.needsUpdate = true;
+const alGeo = new THREE.PlaneGeometry(0.36, 0.36);
+const alMat = new THREE.MeshStandardMaterial({
+    map: alTex, transparent: true,
+    emissive: 0xffffff, emissiveMap: alTex, emissiveIntensity: 1.2
+});
+const alMesh = new THREE.Mesh(alGeo, alMat);
+alMesh.position.set(0, LH / 2, -LT - 0.001);
+alMesh.rotation.y = Math.PI;
+lidGroup.add(alMesh);
+
+// --- Screen glow lights ---
+const glowBlue = new THREE.PointLight(0x4488cc, 1.5, 3);
+glowBlue.position.set(0, LH * 0.5, 0.5);
+lidGroup.add(glowBlue);
+const glowAmber = new THREE.PointLight(0xD4923A, 0.6, 4);
+glowAmber.position.set(0, LH * 0.6, 0.3);
+lidGroup.add(glowAmber);
+
+// Hinge angles for this procedural model: open (upright) -> closed (down on base)
+const LID_OPEN_X = -0.08;
+const LID_CLOSED_X = 1.48;
+lidPivot.rotation.x = LID_OPEN_X;
+
+/* ==================== PHONES ==================== */
+function makePhoneScreenTex(label) {
+    const c = document.createElement('canvas');
+    c.width = 220;
+    c.height = 440;
+    const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 0, 440);
+    g.addColorStop(0, '#0c1824');
+    g.addColorStop(1, '#162840');
+    x.fillStyle = g;
+    x.fillRect(0, 0, 220, 440);
+    x.fillStyle = '#556677';
+    x.font = '12px -apple-system, Helvetica, sans-serif';
+    x.textAlign = 'center';
+    x.fillText('12:00', 110, 28);
+    x.fillStyle = '#D4923A';
+    x.font = 'bold 20px -apple-system, Helvetica, sans-serif';
+    x.fillText(label, 110, 200);
+    x.fillStyle = '#4488aa';
+    x.beginPath(); x.roundRect(30, 240, 160, 8, 4); x.fill();
+    x.fillStyle = '#3a6688';
+    x.beginPath(); x.roundRect(30, 260, 120, 8, 4); x.fill();
+    x.beginPath(); x.roundRect(30, 280, 140, 8, 4); x.fill();
+    return new THREE.CanvasTexture(c);
+}
+
+function createPhone(px, rotY, label) {
+    const grp = new THREE.Group();
+    const pw = 0.55, ph = 1.1, pd = 0.07;
+    const body = new THREE.Mesh(
+        makeRoundedBoxGeo(pw, ph, pd, 0.06),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.6, roughness: 0.35 })
+    );
+    body.castShadow = true;
+    grp.add(body);
+
+    const scr = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.44, 0.96),
+        new THREE.MeshBasicMaterial({ map: makePhoneScreenTex(label) })
+    );
+    scr.position.z = pd / 2 + 0.001;
+    grp.add(scr);
+
+    grp.position.set(px, 0.3, 0.8);
+    grp.rotation.y = rotY;
+    grp.scale.set(0, 0, 0);
+    return grp;
+}
+
+const leftPhone = createPhone(-2.2, 0.3, 'iPhone');
+const rightPhone = createPhone(2.2, -0.3, 'iPhone');
+sceneGroup.add(leftPhone);
+sceneGroup.add(rightPhone);
+
+/* ==================== DASHED LINES ==================== */
+function makeDash(from, to) {
+    const geo = new THREE.BufferGeometry().setFromPoints([from.clone(), to.clone()]);
+    const mat = new THREE.LineDashedMaterial({
+        color: 0xD4923A, dashSize: 0.15, gapSize: 0.1, transparent: true, opacity: 0
+    });
+    const line = new THREE.Line(geo, mat);
+    line.computeLineDistances();
+    return line;
+}
+const leftLine = makeDash(
+    new THREE.Vector3(-BW / 2, BH / 2, 0),
+    new THREE.Vector3(-2.2 + 0.275, 0.3, 0.8)
+);
+const rightLine = makeDash(
+    new THREE.Vector3(BW / 2, BH / 2, 0),
+    new THREE.Vector3(2.2 - 0.275, 0.3, 0.8)
+);
+sceneGroup.add(leftLine);
+sceneGroup.add(rightLine);
+
+/* ==================== ANIMATION ==================== */
+function updateGlowFromLid() {
+    const t = (lidPivot.rotation.x - LID_OPEN_X) / (LID_CLOSED_X - LID_OPEN_X);
+    const openness = 1 - THREE.MathUtils.clamp(t, 0, 1);
+    glowBlue.intensity = openness * 1.5;
+    glowAmber.intensity = openness * 0.6;
+}
+
+// Close onto base, then a tiny magnetic snap at contact.
+gsap.timeline({ delay: 0.8 })
+    .to(lidPivot.rotation, {
+        x: LID_CLOSED_X - 0.06,
+        duration: 1.35,
+        ease: "power3.inOut",
+        onUpdate: updateGlowFromLid
+    })
+    .to(lidPivot.rotation, {
+        x: LID_CLOSED_X,
+        duration: 0.12,
+        ease: "power4.out",
+        onUpdate: updateGlowFromLid,
+        onComplete: function () {
+            glowBlue.intensity = 0;
+            glowAmber.intensity = 0;
+            gsap.to(leftPhone.scale, { x: 1, y: 1, z: 1, duration: 0.6, ease: "back.out(1.4)", delay: 0.2 });
+            gsap.to(rightPhone.scale, { x: 1, y: 1, z: 1, duration: 0.6, ease: "back.out(1.4)", delay: 0.35 });
+            gsap.to(leftLine.material, { opacity: 1, duration: 0.5, ease: "power1.out", delay: 0.7 });
+            gsap.to(rightLine.material, { opacity: 1, duration: 0.5, ease: "power1.out", delay: 0.7 });
+        }
+    });
+
+const clock = new THREE.Clock();
+function animate() {
+    requestAnimationFrame(animate);
+    sceneGroup.position.y = Math.sin(clock.getElapsedTime() * 0.7) * 0.025;
+    renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

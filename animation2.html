@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffeetosh — Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Nunito:wght@900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-base: #1A1310;
+    --bg-card: #342920;
+    --accent: #D4923A;
+    --text-primary: #F0E6D8;
+    --text-secondary: #A89680;
+  }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg-base);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    width: 100%;
+    padding: 0 24px;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+    animation-delay: 0.1s;
+  }
+  .badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.65); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* ── Headline ── */
+  .headline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    color: var(--text-primary);
+    line-height: 1.08;
+    margin-bottom: 18px;
+  }
+  .headline .word {
+    display: inline-block;
+    opacity: 0;
+    animation: wordIn 0.5s ease forwards;
+  }
+  .headline .word.amber { color: var(--accent); }
+  @keyframes wordIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Subtext ── */
+  .subtext {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 400;
+    color: var(--text-secondary);
+    max-width: 520px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeIn 0.7s ease forwards;
+    animation-delay: 0.9s;
+  }
+
+  /* ── Illustration Area ── */
+  .illustration {
+    position: relative;
+    width: 620px;
+    max-width: 100%;
+    height: 340px;
+    margin-bottom: 28px;
+  }
+  #laptop-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .connect-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .c-line {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+    fill: none;
+    stroke-dashoffset: 200;
+    transition: stroke-dashoffset 1s ease;
+  }
+  .glow-ring {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,146,58,0.25) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  /* ── CTA Button ── */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: var(--bg-base);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 17px;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 40px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+    animation-delay: 1.2s;
+  }
+  .cta:hover {
+    box-shadow: 0 8px 32px rgba(212,146,58,0.38);
+    filter: brightness(1.08);
+  }
+  .cta svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <!-- Badge -->
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Coffeetosh is running
+  </div>
+
+  <!-- H1 -->
+  <h1 class="headline" id="headline"></h1>
+
+  <!-- Subtext -->
+  <p class="subtext">The open-source sleep preventer for macOS. No root hacks. Free forever.</p>
+
+  <!-- Illustration -->
+  <div class="illustration">
+    <canvas id="laptop-canvas"></canvas>
+    <svg class="connect-lines" viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet">
+      <path class="c-line" id="line-left"   d="M 110 200 Q 200 160 280 180"/>
+      <path class="c-line" id="line-right"  d="M 450 200 Q 360 160 280 180"/>
+      <path class="c-line" id="line-bottom" d="M 280 280 Q 280 240 280 200"/>
+    </svg>
+    <div class="glow-ring"></div>
+  </div>
+
+  <!-- CTA -->
+  <a href="#" class="cta">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v10M7 12l5 5 5-5"/>
+      <path d="M5 19h14"/>
+    </svg>
+    Download for Mac
+  </a>
+</section>
+
+<!-- Three.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ───── Headline word stagger ───── */
+  var headlineText = 'Addicting your mac to stay alive';
+  var words = headlineText.split(' ');
+  var h1 = document.getElementById('headline');
+  words.forEach(function (w, i) {
+    var span = document.createElement('span');
+    span.className = 'word' + (w === 'alive' ? ' amber' : '');
+    span.textContent = w;
+    span.style.animationDelay = (0.2 + i * 0.1) + 's';
+    h1.appendChild(span);
+    if (i < words.length - 1) h1.appendChild(document.createTextNode(' '));
+  });
+
+  /* ───── Three.js Setup ───── */
+  var canvas = document.getElementById('laptop-canvas');
+  var container = canvas.parentElement;
+  var W = container.clientWidth;
+  var H = container.clientHeight;
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(W, H);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  var scene = new THREE.Scene();
+
+  var camera = new THREE.PerspectiveCamera(40, W / H, 0.01, 100);
+  camera.position.set(0, 0.05, 1.6);
+  camera.lookAt(0, -0.05, 0);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+  var dirLight = new THREE.DirectionalLight(0xfff5e0, 1.1);
+  dirLight.position.set(3, 5, 4);
+  scene.add(dirLight);
+
+  var pointLight = new THREE.PointLight(0xD4923A, 0.7, 2.5);
+  pointLight.position.set(0, 0.2, 0.6);
+  scene.add(pointLight);
+
+  /* ───── World group (for idle bob) ───── */
+  var world = new THREE.Group();
+  scene.add(world);
+
+  /* ───── iPhone builder ───── */
+  function createIPhone(posX) {
+    var bodyGeo = new THREE.BoxGeometry(0.12, 0.24, 0.016);
+    var bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x111111, roughness: 0.4, metalness: 0.3,
+      transparent: true, opacity: 0
+    });
+    var body = new THREE.Mesh(bodyGeo, bodyMat);
+
+    /* Screen canvas */
+    var c = document.createElement('canvas');
+    c.width = 128; c.height = 256;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, 128, 256);
+    /* Top bar */
+    ctx.fillStyle = '#D4923A';
+    ctx.fillRect(0, 0, 128, 22);
+    /* Label text */
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (posX < 0) {
+      ctx.fillText('Focus Mode', 64, 13);
+    } else {
+      ctx.fillText('3 Coffees', 64, 13);
+    }
+    /* Amber circle badge */
+    ctx.fillStyle = '#D4923A';
+    ctx.beginPath();
+    ctx.arc(109, 11, 7, 0, Math.PI * 2);
+    ctx.fill();
+    /* Content rows */
+    ctx.fillStyle = 'rgba(168,150,128,0.3)';
+    ctx.fillRect(14, 80, 100, 4);
+    ctx.fillRect(14, 100, 100, 4);
+    ctx.fillRect(14, 120, 100, 4);
+
+    var tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    var screenGeo = new THREE.PlaneGeometry(0.1, 0.2);
+    var screenMat = new THREE.MeshStandardMaterial({
+      map: tex, roughness: 0.8,
+      emissive: new THREE.Color(0x0a0a0a), emissiveIntensity: 0.3,
+      transparent: true, opacity: 0
+    });
+    var screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.z = 0.009;
+    body.add(screenMesh);
+
+    body.position.set(posX, -0.1, 0.1);
+    return { mesh: body, bodyMat: bodyMat, screenMat: screenMat };
+  }
+
+  var phoneL = createIPhone(-0.55);
+  var phoneR = createIPhone(0.55);
+  world.add(phoneL.mesh);
+  world.add(phoneR.mesh);
+
+  /* ───── Animation state ───── */
+  var lidPivot = null;
+  var clock = new THREE.Clock();
+  var LID_OPEN = 0;
+  var LID_CLOSED = -1.18;
+  var LID_DUR = 2.5;
+  var lidElapsed = 0;
+  var lidDone = false;
+  var phoneFading = false;
+  var phoneFadeElapsed = 0;
+  var PHONE_FADE_DUR = 0.8;
+  var totalElapsed = 0;
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function setupGeneratedLidPivot(model) {
+    var allBox = new THREE.Box3().setFromObject(model);
+    var allSize = allBox.getSize(new THREE.Vector3());
+    var yCut = allBox.min.y + allSize.y * 0.58;
+
+    var lidMeshes = [];
+    model.traverse(function (obj) {
+      if (!obj.isMesh) return;
+      var c = new THREE.Vector3();
+      new THREE.Box3().setFromObject(obj).getCenter(c);
+      if (c.y >= yCut) lidMeshes.push(obj);
+    });
+
+    if (!lidMeshes.length) return null;
+
+    var lidBox = new THREE.Box3();
+    for (var i = 0; i < lidMeshes.length; i++) lidBox.expandByObject(lidMeshes[i]);
+
+    var hinge = new THREE.Vector3(
+      (lidBox.min.x + lidBox.max.x) * 0.5,
+      lidBox.min.y,
+      lidBox.max.z
+    );
+
+    var pivot = new THREE.Group();
+    pivot.position.copy(hinge);
+    model.add(pivot);
+
+    for (var j = 0; j < lidMeshes.length; j++) {
+      pivot.attach(lidMeshes[j]);
+    }
+
+    return pivot;
+  }
+
+  /* ───── Load MacBook GLB ───── */
+  var loader = new THREE.GLTFLoader();
+  loader.load(
+    'WEBSITE 2/assets/macbook.glb',
+    function (gltf) {
+      var model = gltf.scene;
+
+      /* Center & scale to ~1.1 units */
+      var box = new THREE.Box3().setFromObject(model);
+      var size = box.getSize(new THREE.Vector3());
+      var maxDim = Math.max(size.x, size.y, size.z);
+      var s = 1.1 / maxDim;
+      model.scale.setScalar(s);
+
+      /* Re-center after scale */
+      box.setFromObject(model);
+      var center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+
+      world.add(model);
+
+      /* Build a hinge pivot from visible top-half meshes (GLB has no reliable lid bone name). */
+      lidPivot = setupGeneratedLidPivot(model);
+      if (lidPivot) {
+        lidPivot.rotation.x = LID_OPEN;
+        window._lidPivot = lidPivot;
+      } else {
+        lidDone = true;
+        phoneFading = true;
+        triggerLines();
+      }
+    },
+    undefined,
+    function () {
+      /* Fallback */
+      var fb = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.5, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x342920 })
+      );
+      world.add(fb);
+      lidDone = true;
+    }
+  );
+
+  /* ───── SVG + glow trigger ───── */
+  function triggerLines() {
+    document.getElementById('line-left').style.strokeDashoffset = '0';
+    document.getElementById('line-right').style.strokeDashoffset = '0';
+    document.getElementById('line-bottom').style.strokeDashoffset = '0';
+    document.querySelector('.glow-ring').style.opacity = '0.8';
+  }
+
+  /* ───── Render loop ───── */
+  function animate() {
+    requestAnimationFrame(animate);
+    var dt = clock.getDelta();
+    totalElapsed += dt;
+
+    /* Lid animation */
+    if (lidPivot && !lidDone) {
+      lidElapsed += dt;
+      var t = Math.min(lidElapsed / LID_DUR, 1);
+      lidPivot.rotation.x = LID_OPEN + (LID_CLOSED - LID_OPEN) * easeInOutCubic(t);
+      if (t >= 1) {
+        lidDone = true;
+        phoneFading = true;
+        triggerLines();
+      }
+    }
+
+    /* Phone fade-in */
+    if (phoneFading) {
+      phoneFadeElapsed += dt;
+      var p = Math.min(phoneFadeElapsed / PHONE_FADE_DUR, 1);
+      phoneL.bodyMat.opacity = p;
+      phoneL.screenMat.opacity = p;
+      phoneR.bodyMat.opacity = p;
+      phoneR.screenMat.opacity = p;
+      if (p >= 1) phoneFading = false;
+    }
+
+    /* Idle float after 3.3s */
+    if (totalElapsed > 3.3) {
+      world.position.y = Math.sin((totalElapsed - 3.3) * 1.2) * 0.018;
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  /* ───── Resize handler ───── */
+  window.addEventListener('resize', function () {
+    W = container.clientWidth;
+    H = container.clientHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+
+})();
+</script>
+</body>
+</html>

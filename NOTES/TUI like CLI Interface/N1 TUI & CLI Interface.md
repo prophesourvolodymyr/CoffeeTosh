@@ -1,0 +1,3 @@
+So right now the commands that is gettig outputted using our CLI commnads are too simple. So I want to create a simple tui nterface, and coloring for some of the commnads, like taht one taht starts headless or keep awake timers. But tui I dont mean the TUI app, but from CLI commands app gonna be responding with organized tui like interfaces.
+
+So right now I need to dedice from the AI, what commands need a somple TUI styling

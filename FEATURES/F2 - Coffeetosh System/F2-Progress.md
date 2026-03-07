@@ -1,6 +1,6 @@
 # 📊 F2 - Coffeetosh System Progress Tracker
-**Status:** ✅ Complete (Phase 7 — QoL Features Added)
-**Last Updated:** 2026-03-03
+**Status:** ✅ Complete (Phase 10 — Bug Fix Sprint)
+**Last Updated:** 2026-03-05
 **Source:** R1-Coffeetosh-System-Documentation.md
 
 ---
@@ -97,3 +97,27 @@
 - [x] **Status Command:** Shows "Lid: Closed 🔒" / "Lid: Open 🔓" and "Low Power Mode: ON ⚡" in `coffeetosh status` output.
 - [x] **Removed CLI-side brightness:** `PowerSavingHelper.activate()` no longer called from CLI start. All brightness management is now daemon-driven via lid events.
 - [x] **`--low-power` stays session-wide:** Low Power Mode is enabled at start (CLI has TTY for sudo) and disabled at stop. Cannot toggle dynamically from daemon (no TTY for sudo authentication).
+
+---
+
+## 🆕 PHASE 9: Shared Preset Store & CLI Preset Command
+
+- [x] **`PrefsFileManager.swift`** — New `CoffeetoshCore` utility that reads/writes `~/.coffeetosh/prefs.json`. Pattern mirrors `StatusFileManager`. `read()` is non-throwing (returns empty prefs on failure). `write()` is atomic. Shared by GUI and CLI so they always see the same preset.
+- [x] **`coffeetosh preset` command** — Shows current saved preset.
+- [x] **`coffeetosh preset set <mode> <duration>`** — Saves a preset (e.g. `coffeetosh preset set keep-awake 2h`). Accepts `30m`, `1h`, `2h`, `4h`, `8h`, `24h`, `0` (indefinite). Stores `presetMode` as `"keepAwake"` or `"headless"` for GUI compatibility.
+- [x] **`coffeetosh preset clear`** — Clears saved preset.
+- [x] **`coffeetosh start` with no args** — Detects preset-mode intent (`no hours value + no --mode flag`) and uses the saved preset. Exits with a helpful message if no preset is saved. Passes `--low-power` through to the underlying `handleStart` call.
+- [x] **GUI mirrors to prefs.json** — Both `DashboardPresetView.savePreset()` and `SettingsView.PresetPickerSection.savePreset()/clearPreset()` now call `PrefsFileManager.write()` alongside `@AppStorage` so the CLI always sees what the user set in the app.
+
+---
+
+## 🆕 PHASE 10: Bug Fix Sprint — CLI & System
+
+- [x] **Bug #3 — FileSystemWatcher atomic rename** — Rewrote `FileSystemWatcher.swift` to watch BOTH the file (`fileSource`) AND the parent directory (`dirSource`). Directory watcher fires immediately on atomic renames. File watcher calls `reopenFileWatch()` on `.rename`/`.delete` (50ms delay then re-opens fd). All three sources feed into a single `handleFileChange()`.
+- [x] **Bug #6 — CLI --minutes flag** — Added `--minutes`/`-m` flag to `handleStart` arg parsing in `main.swift`. Converts minutes to fractional hours (`m / 60.0`). Updated `printUsage()` to document both forms. Allows sub-hour durations like `coffeetosh start --minutes 45`.
+
+---
+
+## 🆕 PHASE 11: Bug Fix Sprint — CLI History & Analytics Sync
+
+- [x] **CLI stop race condition (history not recorded):** `handleStop()` sent SIGTERM via `DaemonLauncher.stop()` and then immediately called `StatusFileManager.markInactive()`. Because `markInactive()` could win the race before the daemon processed SIGTERM, the daemon's `SleepManager.restore()` guard (`fileActive=false`) skipped history recording silently. **Fix:** CLI now records the session history itself (it has all data from the initial `status` read at the top of `handleStop()`) BEFORE calling `markInactive()` and BEFORE sending SIGTERM. The daemon's `restore()` still correctly runs deactivation cleanup (`isActive=true` in-memory), but its `status.active` guard skips the duplicate history write. This guarantees exactly one history entry regardless of signal timing.

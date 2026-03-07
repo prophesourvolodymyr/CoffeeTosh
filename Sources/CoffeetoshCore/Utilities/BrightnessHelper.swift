@@ -57,7 +57,7 @@ public enum BrightnessHelper {
 
     // MARK: - Public API (Minimum — headless power saving)
 
-    /// Sets display to minimum brightness (1 notch above off).
+    /// Sets display brightness to zero (fully off — backlight killed).
     /// Saves the current value for later restore via `restoreFromMinimum()`.
     public static func setMinimum() {
         guard let current = getBuiltInBrightness() else {
@@ -66,10 +66,9 @@ public enum BrightnessHelper {
         }
 
         savedBrightnessBeforeMin = current
-        let minimum: Float = oneNotch  // ~6.25% — lowest visible
 
-        if setBuiltInBrightness(minimum) {
-            print("[BrightnessHelper] 🔅 Brightness set to minimum: \(String(format: "%.1f%%", minimum * 100))")
+        if setBuiltInBrightness(0.0) {
+            print("[BrightnessHelper] 🔅 Brightness set to 0% (screen off, system awake)")
         }
     }
 

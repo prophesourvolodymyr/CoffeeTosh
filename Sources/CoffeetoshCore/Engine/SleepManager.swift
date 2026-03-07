@@ -135,8 +135,11 @@ public final class SleepManager {
         let fileActive = (try? StatusFileManager.read())?.active ?? false
         guard isActive || fileActive else { return }
 
+        var targetMode = currentMode
+
         // Record history before clearing state
         if let status = try? StatusFileManager.read(), status.active {
+            targetMode = status.mode // Use the mode from file as source of truth!
             // Compute actual elapsed seconds — not the preset duration.
             let actualSecs = Int(Date().timeIntervalSince(status.startTime ?? Date()))
             let item = SessionHistoryItem(
@@ -149,7 +152,7 @@ public final class SleepManager {
             HistoryManager.shared.appendSession(item)
         }
 
-        switch currentMode {
+        switch targetMode {
         case .keepAwake:
             deactivateModeA()
         case .headless:
@@ -246,25 +249,18 @@ public final class SleepManager {
     }
 
     /// Kills caffeinate subprocess and restores pmset to defaults.
-    /// Tries sudo first (works if cached), then NSAppleScript, then warns user.
     private func deactivateModeB() {
         // 1. Kill caffeinate
         caffeinate.stop()
 
-        // 2. Restore pmset — try sudo (timestamp may be cached from pre-activate)
-        let sudoOk = ShellHelper.runWithSudo("pmset -a disablesleep 0")
-        if sudoOk {
-            print("[SleepManager] Mode B: pmset disablesleep 0 — RESTORED (sudo)")
-            return
+        // 2. Restore pmset.
+        // runWithAdmin tries sudo -n first (silent, instant if auth token is cached
+        // from the start call), then falls back to the osascript dialog.
+        let ok = ShellHelper.runWithAdmin("pmset -a disablesleep 0")
+        if ok {
+            print("[SleepManager] Mode B: pmset disablesleep 0 — RESTORED")
+        } else {
+            print("[SleepManager] ⚠️ Mode B: Could not restore pmset. Run manually: sudo pmset -a disablesleep 0")
         }
-
-        // 3. Fallback: NSAppleScript (works in GUI)
-        let adminOk = ShellHelper.runWithAdmin("pmset -a disablesleep 0")
-        if adminOk {
-            print("[SleepManager] Mode B: pmset disablesleep 0 — RESTORED (admin)")
-            return
-        }
-
-        print("[SleepManager] ⚠️ Mode B: Could not restore pmset. Run manually: sudo pmset -a disablesleep 0")
     }
 }

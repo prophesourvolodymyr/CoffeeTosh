@@ -42,7 +42,9 @@ public class HistoryManager {
         
         do {
             let data = try JSONEncoder().encode(logs)
-            try data.write(to: historyFileURL)
+            // .atomic: writes to a temp file then renames it over the target,
+            // preventing partial/corrupt JSON if the process is killed mid-write.
+            try data.write(to: historyFileURL, options: .atomic)
         } catch {
             print("Failed to write history: \(error)")
         }

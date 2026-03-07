@@ -21,6 +21,12 @@ case "status":
     handleStatus()
 case "install-cli":
     handleInstallCLI()
+case "preset":
+    handlePreset(args: Array(args.dropFirst(2)))
+case "battery":
+    handleBattery()
+case "temp":
+    handleTemp()
 case "help", "--help", "-h":
     printUsage()
 default:
@@ -32,6 +38,35 @@ default:
 // MARK: - Start ──────────────────────────────────────────────────
 
 func handleStart(args: [String]) {
+    // ── Preset shortcut ──────────────────────────────────────────────────────
+    // `coffeetosh start` (no hours value, no --mode flag) → activate saved preset.
+    let wantsPreset = !args.contains { Double($0) != nil } && !args.contains("--mode")
+    if wantsPreset {
+        let prefs = PrefsFileManager.read()
+        guard prefs.hasPreset else {
+            print("No Quick Preset saved.")
+            print("   Set one in the app:  Menu Bar -> Settings -> Quick Preset")
+            print("   Or in terminal:      coffeetosh preset set <mode> <duration>")
+            print("")
+            print("   Or start with explicit args:")
+            print("     coffeetosh start 8                       Lid Closed, 8 hours")
+            print("     coffeetosh start 2 --mode keep-awake     Keep Awake, 2 hours")
+            exit(1)
+        }
+        let wantsLowPower = args.contains("--low-power")
+        let h        = prefs.presetDurationSeconds == 0 ? 0.0 : Double(prefs.presetDurationSeconds) / 3600.0
+        let hoursStr = h == 0 ? "0" : (h == Double(Int(h)) ? "\(Int(h))" : "\(h)")
+        let modeStr  = prefs.presetMode == "headless" ? "coffeetosh" : "keep-awake"
+        let durLabel = prefs.presetDurationSeconds == 0 ? "inf" : "\(prefs.presetDurationSeconds / 60)m"
+        let modeName = prefs.presetMode == "headless" ? "Lid Closed" : "Keep Awake"
+        print("Quick Preset: \(modeName) - \(durLabel)")
+        var expanded = [hoursStr, "--mode", modeStr]
+        if wantsLowPower { expanded.append("--low-power") }
+        handleStart(args: expanded)
+        return
+    }
+
+    // ── Normal arg parsing ───────────────────────────────────────────────────
     // Parse hours (default: 8)
     var hours: Double = 8
     var mode: CoffeetoshMode = .headless  // Default: Mode B (Headless)
@@ -45,16 +80,22 @@ func handleStart(args: [String]) {
             switch modeStr {
             case "keep-awake", "a":
                 mode = .keepAwake
-            case "coffeetosh", "headless", "b":
+            case "coffeetosh", "headless", "lid-closed", "b":
                 mode = .headless
             default:
-                print("⚠️  Unknown mode: \(modeStr). Use 'keep-awake' or 'coffeetosh'.")
+                print("⚠️  Unknown mode: \(modeStr). Use 'keep-awake' or 'lid-closed'.")
                 exit(1)
             }
             i += 2
         } else if arg == "--low-power" {
             lowPower = true
             i += 1
+        } else if (arg == "--minutes" || arg == "-m"), i + 1 < args.count {
+            if let m = Double(args[i + 1]) { hours = m / 60.0 } else {
+                print("⚠️  Invalid minutes value: \(args[i + 1])")
+                exit(1)
+            }
+            i += 2
         } else if let h = Double(arg) {
             hours = h
             i += 1
@@ -99,7 +140,7 @@ func handleStart(args: [String]) {
         print("   Enter your macOS password below (typing is hidden):")
         let adminOk = SleepManager.shared.preActivateModeBAdmin()
         guard adminOk else {
-            print("❌ Admin access denied — cannot activate Headless mode.")
+            print("❌ Admin access denied — cannot activate Lid Closed mode.")
             exit(1)
         }
     }
@@ -129,12 +170,12 @@ func handleStart(args: [String]) {
         let lowPowerStr = lowPower ? " | Low Power: ON" : ""
         if let check = try? StatusFileManager.read(), check.active, check.daemonPid != nil {
             print("☕ Coffeetosh started!")
-            print("   Mode: \(mode == .headless ? "Coffeetosh/Headless (Mode B)" : "Keep Awake (Mode A)")")
+            print("   Mode: \(mode == .headless ? "Lid Closed" : "Keep Awake")")
             print("   Duration: \(durationSeconds == 0 ? "∞ (indefinite)" : "\(hours)h")\(lowPowerStr)")
             print("   Daemon PID: \(pid)")
         } else {
             print("☕ Coffeetosh started!")
-            print("   Mode: \(mode == .headless ? "Coffeetosh/Headless (Mode B)" : "Keep Awake (Mode A)")")
+            print("   Mode: \(mode == .headless ? "Lid Closed" : "Keep Awake")")
             print("   Duration: \(durationSeconds == 0 ? "∞ (indefinite)" : "\(hours)h")\(lowPowerStr)")
             print("   Daemon PID: \(pid)")
             print("   ⚠️  Daemon may still be initializing — check: coffeetosh status")
@@ -150,7 +191,7 @@ func handleStart(args: [String]) {
             print("❌ Failed to activate \(mode.rawValue) mode.")
             exit(1)
         }
-        print("   Mode: \(mode == .headless ? "Coffeetosh/Headless (Mode B)" : "Keep Awake (Mode A)")")
+        print("   Mode: \(mode == .headless ? "Lid Closed" : "Keep Awake")")
         print("   Duration: \(durationSeconds == 0 ? "∞ (indefinite)" : "\(hours)h")")
         print("   Running in foreground — press Ctrl+C to stop.")
 
@@ -174,7 +215,32 @@ func handleStop() {
         exit(0)
     }
 
-    // Signal the daemon to stop (it will restore pmset via signal trap)
+    // Record history NOW — before sending SIGTERM or calling markInactive().
+    // The daemon's signal handler also calls SleepManager.restore() which
+    // records history, but there is a race: if we call markInactive() first,
+    // the daemon sees active=false and skips recording.  By writing history here
+    // then marking inactive BEFORE sending SIGTERM, we guarantee exactly one entry:
+    // the CLI records it, and the daemon's restore() guard (fileActive=false)
+    // skips the duplicate.  SleepManager's deactivation logic still runs in the
+    // daemon (it has isActive=true in-memory) to kill caffeinate / release assertions.
+    if let start = status.startTime {
+        let actualSecs = max(1, Int(Date().timeIntervalSince(start)))
+        let item = SessionHistoryItem(
+            startTime: start,
+            durationSeconds: status.durationSeconds,
+            actualDurationSeconds: actualSecs,
+            mode: status.mode,
+            endReason: "User Stopped"
+        )
+        HistoryManager.shared.appendSession(item)
+    }
+
+    // Mark file inactive BEFORE SIGTERM — daemon's restore() will see
+    // active=false and skip the duplicate history write, while still
+    // running deactivation cleanup (caffeinate kill, IOPMAssertion release).
+    try? StatusFileManager.markInactive()
+
+    // Signal the daemon to clean up (kill caffeinate, release assertions)
     DaemonLauncher.stop()
 
     // For Mode B: restore pmset from CLI (daemon may not be able to sudo)
@@ -193,10 +259,6 @@ func handleStop() {
         _ = BrightnessHelper.setBuiltInBrightnessPublic(originalBrightness)
         print("🔆 Brightness restored to \(String(format: "%.1f%%", originalBrightness * 100))")
     }
-
-    // Always mark status as inactive — the CLI process never called activate(),
-    // so SleepManager.shared.restore() would skip (isActive == false).
-    try? StatusFileManager.markInactive()
 
     print("🛑 Coffeetosh stopped. System sleep defaults restored.")
 }
@@ -254,7 +316,7 @@ func handleStatus() {
     }
 
     if status.active {
-        let modeName = status.mode == .headless ? "Coffeetosh/Headless" : "Keep Awake"
+        let modeName = status.mode == .headless ? "Lid Closed" : "Keep Awake"
         print("Coffeetosh: ACTIVE (Mode: \(modeName))")
 
         if let start = status.startTime {
@@ -327,11 +389,175 @@ func handleInstallCLI() {
     // Create symlink
     let success = ShellHelper.runWithAdmin("ln -sf \"\(ownPath)\" \(symlinkPath)")
     if success {
-        print("✅ coffeetosh installed at \(symlinkPath)")
+        print("coffeetosh installed at \(symlinkPath)")
         print("   Run: coffeetosh status")
     } else {
-        print("❌ Failed to create symlink. Try manually:")
+        print("Failed to create symlink. Try manually:")
         print("   sudo ln -sf \"\(ownPath)\" \(symlinkPath)")
+    }
+}
+
+// MARK: - Preset ──────────────────────────────────────────────────────────────
+
+func handlePreset(args: [String]) {
+    // No subcommand -> show current preset
+    if args.isEmpty {
+        let prefs = PrefsFileManager.read()
+        if prefs.hasPreset {
+            let modeLabel = prefs.presetMode == "headless" ? "Lid Closed" : "Keep Awake"
+            let durLabel  = prefs.presetDurationSeconds == 0
+                ? "inf (indefinite)"
+                : "\(prefs.presetDurationSeconds / 60)m"
+            print("Quick Preset: \(modeLabel) - \(durLabel)")
+            print("   coffeetosh start  <- will use this preset")
+        } else {
+            print("No Quick Preset saved.")
+            print("   coffeetosh preset set keep-awake 2h")
+            print("   coffeetosh preset set lid-closed 8h")
+        }
+        return
+    }
+
+    switch args[0] {
+    case "set":
+        // coffeetosh preset set <mode> <duration>
+        guard args.count >= 3 else {
+            print("Usage: coffeetosh preset set <mode> <duration>")
+            print("  mode:     keep-awake | lid-closed")
+            print("  duration: 30m | 1h | 2h | 4h | 8h | 0 (indefinite)")
+            exit(1)
+        }
+        let modeArg = args[1]
+        let durArg  = args[2]
+
+        let presetMode: String
+        switch modeArg {
+        case "keep-awake", "a", "keepAwake": presetMode = "keepAwake"
+        case "headless", "lid-closed", "b", "coffeetosh": presetMode = "headless"
+        default:
+            print("Unknown mode: \(modeArg). Use 'keep-awake' or 'lid-closed'.")
+            exit(1)
+        }
+
+        let presetSeconds: Int
+        if durArg == "0" || durArg == "inf" {
+            presetSeconds = 0
+        } else if durArg.hasSuffix("h"), let h = Int(durArg.dropLast()) {
+            presetSeconds = h * 3600
+        } else if durArg.hasSuffix("m"), let m = Int(durArg.dropLast()) {
+            presetSeconds = m * 60
+        } else if let m = Int(durArg) {
+            presetSeconds = m * 60
+        } else {
+            print("Unknown duration: \(durArg). Use '2h', '30m', or '0' for indefinite.")
+            exit(1)
+        }
+
+        try? PrefsFileManager.write(CoffeetoshPrefs(
+            presetMode: presetMode,
+            presetDurationSeconds: presetSeconds
+        ))
+        let modeLabel = presetMode == "headless" ? "Lid Closed" : "Keep Awake"
+        let durLabel  = presetSeconds == 0 ? "inf" : "\(presetSeconds / 60)m"
+        print("Quick Preset saved: \(modeLabel) - \(durLabel)")
+        print("   coffeetosh start  <- will now use this preset")
+
+    case "clear":
+        try? PrefsFileManager.write(CoffeetoshPrefs())
+        print("Quick Preset cleared.")
+
+    default:
+        print("Unknown preset subcommand: \(args[0])")
+        print("   coffeetosh preset                         Show current preset")
+        print("   coffeetosh preset set <mode> <duration>   Save preset")
+        print("   coffeetosh preset clear                   Remove preset")
+        exit(1)
+    }
+}
+
+// MARK: - Battery ──────────────────────────────────────────────────
+
+func handleBattery() {
+    let raw = ShellHelper.run("pmset -g batt")
+    guard !raw.isEmpty else {
+        print("Battery: unavailable (pmset failed)")
+        return
+    }
+
+    // Sample pmset output:
+    // Now drawing from 'Battery Power'
+    //  -InternalBattery-0 (id=...)\t79%; discharging; 3:42 remaining present: true
+    let lines = raw.components(separatedBy: "\n")
+
+    // Source line (first line)
+    let sourceLine = lines.first ?? ""
+    let isCharging = sourceLine.contains("AC Power")
+    let source = isCharging ? "AC Power (charging)" : "Battery Power"
+
+    // Battery stats line
+    if let statsLine = lines.first(where: { $0.contains("%") }) {
+        // Extract percentage
+        let percentStr: String
+        if let range = statsLine.range(of: #"(\d+)%"#, options: .regularExpression),
+           let numRange = statsLine.range(of: #"\d+"#, options: .regularExpression, range: range) {
+            percentStr = String(statsLine[numRange]) + "%"
+        } else {
+            percentStr = "?%"
+        }
+
+        // Extract time remaining
+        let timeStr: String
+        if statsLine.contains("(no estimate)") || statsLine.contains("not charging") {
+            timeStr = "no estimate"
+        } else if let tr = statsLine.range(of: #"\d+:\d+"#, options: .regularExpression) {
+            timeStr = String(statsLine[tr]) + " remaining"
+        } else {
+            timeStr = ""
+        }
+
+        // Status keyword
+        let status: String
+        if statsLine.contains("charging") { status = "charging" }
+        else if statsLine.contains("discharging") { status = "discharging" }
+        else if statsLine.contains("finishing charge") { status = "finishing charge" }
+        else { status = "idle" }
+
+        print("Battery: \(percentStr) — \(status)")
+        print("Source:  \(source)")
+        if !timeStr.isEmpty { print("Time:    \(timeStr)") }
+    } else {
+        print("Battery: \(source)")
+        print(raw)
+    }
+}
+
+// MARK: - Temperature ────────────────────────────────────────────
+
+func handleTemp() {
+    // Try non-interactive sudo (uses cached token — no prompt, instant).
+    // If there's no cached token, sudo -n exits non-zero and returns nothing.
+    let raw = ShellHelper.run("sudo -n powermetrics --samplers smc -i1 -n1 2>/dev/null")
+
+    if raw.isEmpty {
+        print("Temperature: unavailable.")
+        print("Run manually: sudo powermetrics --samplers smc -i1 -n1 | grep 'CPU die temperature'")
+        return
+    }
+
+    var found = false
+    for line in raw.components(separatedBy: "\n") {
+        let l = line.lowercased()
+        if l.contains("cpu die") || l.contains("gpu die") {
+            if let tempRange = line.range(of: #"[\d.]+"#, options: .regularExpression) {
+                let name = line.components(separatedBy: ":").first?.trimmingCharacters(in: .whitespaces) ?? line
+                let value = String(line[tempRange])
+                print("\(name): \(value)°C")
+                found = true
+            }
+        }
+    }
+    if !found {
+        print("Temperature: could not parse output. Run: sudo powermetrics --samplers smc -i1 -n1")
     }
 }
 
@@ -339,33 +565,46 @@ func handleInstallCLI() {
 
 func printUsage() {
     print("""
-    ☕ Coffeetosh — Prevent macOS sleep on lid close
+    Coffeetosh -- Prevent macOS sleep on lid close
 
     USAGE:
-      coffeetosh start [hours]               Start Mode B (Headless), default 8h
-      coffeetosh start [hours] --mode keep-awake   Start Mode A (idle-sleep only)
-      coffeetosh start [hours] --low-power   Start headless with Low Power Mode
-      coffeetosh start 0                     Start indefinitely
-      coffeetosh stop                        Stop active session, restore settings
-      coffeetosh add [minutes]               Add time to active session (default: 30)
-      coffeetosh status                      Print current state
-      coffeetosh install-cli                 Symlink to /usr/local/bin/coffeetosh
-      coffeetosh help                        Show this message
+      coffeetosh start                              Start with saved Quick Preset
+      coffeetosh start [hours]                      Start Lid Closed mode (default 8h)
+      coffeetosh start [hours] --mode keep-awake    Start Keep Awake mode
+      coffeetosh start [hours] --low-power          Lid Closed + Low Power Mode
+      coffeetosh start --minutes <mins>             Start with a minute-level duration
+      coffeetosh start -m <mins>                    Shorthand for --minutes
+      coffeetosh start 0                            Start indefinitely
+      coffeetosh stop                               Stop session, restore settings
+      coffeetosh add [minutes]                      Add time to session (default: 30m)
+      coffeetosh status                             Print current state
+      coffeetosh battery                            Show battery %, source, time remaining
+      coffeetosh temp                               Show CPU/GPU temperature (needs admin)
+      coffeetosh preset                             Show saved Quick Preset
+      coffeetosh preset set <mode> <duration>       Save a Quick Preset
+      coffeetosh preset clear                       Remove saved preset
+      coffeetosh install-cli                        Symlink to /usr/local/bin
+      coffeetosh help                               Show this message
 
     MODES:
       coffeetosh (default)   Lid-closed + SSH safe. Requires admin.
-      keep-awake         Idle-sleep prevention only. No admin needed.
+      keep-awake             Idle-sleep prevention only. No admin needed.
 
     OPTIONS:
-      --low-power        Enable macOS Low Power Mode during headless session.
+      --low-power        Enable macOS Low Power Mode during Lid Closed session.
                          Automatically disabled on stop. Requires admin.
 
+    PRESET DURATION FORMAT:
+      30m   1h   2h   4h   8h   24h   0 (indefinite)
+
     EXAMPLES:
-      coffeetosh start 8                     Keep awake for 8 hours (headless)
-      coffeetosh start 8 --low-power         Headless + Low Power Mode
-      coffeetosh start 2 --mode keep-awake   Prevent idle sleep for 2 hours
-      coffeetosh add 60                      Add 60 minutes to current session
-      coffeetosh add                         Add 30 minutes (default)
-      ssh user@macbook.local "coffeetosh start 12"   Start remotely over SSH
+      coffeetosh start                              Use saved Quick Preset
+      coffeetosh start 8                            Lid Closed, 8 hours
+      coffeetosh start 8 --low-power                Lid Closed + Low Power Mode
+      coffeetosh start 2 --mode keep-awake          Keep Awake, 2 hours
+      coffeetosh preset set keep-awake 2h           Save preset: Keep Awake 2h
+      coffeetosh preset set lid-closed 8h           Save preset: Lid Closed 8h
+      coffeetosh add 60                             Add 60 min to running session
+      ssh user@macbook.local "coffeetosh start 12"  Remote start over SSH
     """)
 }

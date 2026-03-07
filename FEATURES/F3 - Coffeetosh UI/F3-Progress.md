@@ -1,6 +1,6 @@
 # 📊 F3 - Coffeetosh UI Progress Tracker
-**Status:** � Complete
-**Last Updated:** 2026-03-04
+**Status:** ✅ Complete (Phase 18 — Bug Fix Sprint)
+**Last Updated:** 2026-03-05
 **Source:** R1-Coffeetosh-UI-Documentation.md + G1-Styles.md
 
 ---
@@ -209,3 +209,37 @@ Page 4 ("The Splash") renders a real-time GPU liquid simulation using Metal. Hun
 - [x] **Speed & size tuning** — gravity `1800`, ambient drops `8–14` radius, initial pour `10–18`, flood `20–34`. Fast-falling small drops that accumulate into a thick body.
 - [x] **Mouse interaction** — `NSTrackingArea` on `PassthroughMTKView`, radial repulsion force (`3000` strength, `80pt` radius), directional cursor-velocity push, `mouseDown`/`mouseUp` forwarded so button still works.
 - [ ] **Final feel tuning** — continue adjusting physics/visual parameters until the liquid feels perfect (fluidity, speed, merge behavior, mouse responsiveness).
+
+---
+
+## 🆕 PHASE 17: Analytics Roll Animations & CLI Guide Preset Section
+
+- [x] **`AnimatedNumberText` struct** — Private `View` + `Animatable` conformance inside `DashboardView.swift`. SwiftUI interpolates `animatableData` (a `Double`) on every frame. No Timers or dispatch loops — pure SwiftUI animation engine. Renders `Text(String(format: format, number))` for any printf-style format string.
+- [x] **`StatCard` animated** — Changed `value: String` → `value: Double, format: String`. Drives `AnimatedNumberText` from `@State private var current: Double = 0` → target value via `withAnimation(.easeOut(duration: 1.1))` triggered 0.3s after `.onAppear`. All four stat cards (Total Hours `%.1f`, Total Sessions `%.0f`, Keep Awake `%.0f%%`, Headless `%.0f%%`) roll up from zero on every load.
+- [x] **CLI Guide — Quick Preset section** — Added a new `CLISection(title: "Quick Preset", icon: "bolt.fill")` block to `buildCLISections()` containing five copyable command rows: `preset`, `preset set keep-awake 2h`, `preset set headless 8h`, `preset set headless 0`, `preset clear`. Updated the "Start a Session" section description for `coffeetosh start` to reflect preset behavior.
+
+---
+
+## 🆕 PHASE 18: Bug Fix Sprint — Dock & UI
+
+- [x] **Bug #1 — No-preset tip banner** — Amber dismissible banner at top of `ContentView` popover. Appears when `!isLocked && presetMode.isEmpty`. `bolt.slash` icon + one-liner text + "Set" button opens SettingsView.
+- [x] **Bug #2 — Password freeze (main thread block)** — `handleClick` activate path dispatched on `DispatchQueue.global(qos: .userInitiated).async`. Returns early; icon/status updates inside async block. UI never freezes during admin prompt.
+- [x] **Bug #4 — Option+click race condition** — `let isOption = optionKeyHeld || (NSApp.currentEvent?.modifierFlags.contains(.option) ?? false)`. Catches modifier both from pre-stored flag and live event.
+- [x] **Bug #5 — Stop path used wrong sudo method** — Replaced `ShellHelper.runWithSudo` with `ShellHelper.runWithAdmin` in `StatusBarManager` stop path. `runWithSudo` requires TTY (fails silently in GUI); `runWithAdmin` uses NSAppleScript admin dialog.
+- [x] **Bug #10 — Launch at Login** — Created `LaunchAtLoginHelper.swift` wrapping `SMAppService.mainApp`. "Launch at Login" toggle added to both `SettingsView` GENERAL group and `DashboardSettingsView`. `.onAppear` syncs from actual `SMAppService.status`. `import ServiceManagement` added.
+- [x] **Bug #11 — Show Timer in Menu Bar toggle** — `StatusBarManager` 1s DispatchSourceTimer + `updateIconForActiveState` reads `UserDefaults` `showInlineTimer` key. Toggle row added to `SettingsView` GENERAL group via `@AppStorage("showInlineTimer")`. Default behaviour: timer visible.
+- [x] **Bug #13 — Active session banner on Dashboard open** — `@EnvironmentObject var appState: AppState` added to `MainDashboardView`. On `.onAppear`, if session is active, `SessionActiveBanner` springs in from top (0.3s delay). Shows mode icon, mode name, time remaining. Auto-dismisses after 6s or via X button. Private `SessionActiveBanner` struct in `DashboardView.swift`.
+
+---
+
+## 🔴 PHASE 19: Bug Fix Sprint — Headless Dock & Preset System
+
+- [x] **Bug: Headless mode on dock just keeps awake** — `StatusBarManager.handleClick` headless branch was still dispatching on `DispatchQueue.main.asyncAfter`. Changed to `DispatchQueue.global(qos: .userInitiated).async`. The admin authentication dialog (SecurityAgent) cannot receive key events when our main RunLoop is blocked by `process.waitUntilExit()`, so headless activation silently failed. Moving to background thread frees the RunLoop; dialog now appears and is interactive. `appState` / icon updates moved inside a `DispatchQueue.main.async` block after confirmation.
+- [x] **Bug: Passcode prompt doesn't appear for headless mode (popover path)** — `ContentView.toggleSession()` called `SleepManager.activate(mode: .headless, ...)` synchronously on the main thread, blocking the RunLoop for the entire duration of the osascript subprocess. Split into mode-specific branches: headless path now dispatches `activate()` on `DispatchQueue.global(qos: .userInitiated).async`; keepAwake path keeps existing synchronous + optimistic-active behaviour (IOPMAssertion never prompts and never fails). Removed false-optimistic `appState.status.active = true` from headless path — if the user cancels the admin prompt, `activate()` returns `false` and we must not ghost-activate the session. FileSystemWatcher provides real confirmation once `status.json` is written on success.
+- [x] **Bug: Headless preset system doesn't work / no-preset tip stuck** — `ContentView` read `UserDefaults.standard.string(forKey: "presetMode")` inline (not observed), so the no-preset tip and its "Set" CTA never dismissed after a preset was saved. Replaced with `@AppStorage("presetMode") private var savedPresetMode: String = ""` — SwiftUI now re-renders `ContentView` reactively whenever the preset key changes.
+
+---
+
+## 🔴 PHASE 20: Analytics & CLI-GUI Sync Fixes
+
+- [x] **Analytics stat cards stuck at 0:** `StatCard` uses `@State private var current = 0` animated via `onAppear`. But `MainDashboardView` initialises `@State stats` with zero values. `StatCard.onAppear` fires during the first render (animates 0→0, no-op), then `loadData()` in `AnalyticsView.onAppear` overwrites `stats` with real data. SwiftUI re-renders `StatCard` with the new `value` prop but `onAppear` never fires again — `current` stays permanently at 0. **Fix:** Added `.onChange(of: value)` to `StatCard` to re-animate `current` whenever the value prop changes. This covers both initial data load and subsequent reloads after sessions end.
