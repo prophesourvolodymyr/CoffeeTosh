@@ -53,12 +53,12 @@ brew install coffeetosh
 
 ---
 
-## Known Issues / In Progress
+## Known Issues / In Progress(Not Main fuctions - Dev needs help)
 
-- [x] Fix the Liquid simulation on page 4 of onboarding.
-- [x] Make numbers change up quicker on the menu pop-up.
-- [x] Fix Mac lid alignment on the website.
-- [x] Finalize the "Are you sure" pop-up when the lid opens.
+- [ ] Fix the Liquid simulation on page 4 of onboarding.
+- [ ] Make numbers change up quicker on the menu pop-up.
+- [ ] Fix Mac lid alignment on the website.
+- [ ] Finalize the "Continue session?" pop-up when the lid opens.
 
 ---
 
