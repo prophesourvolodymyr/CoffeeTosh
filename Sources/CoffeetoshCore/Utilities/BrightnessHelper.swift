@@ -1,54 +1,42 @@
 // BrightnessHelper.swift
 // Coffeetosh / Coffeetosh Core Engine
-// Nudges display brightness up by 1 notch as a visual "active" indicator.
+// Controls built-in display brightness.
+// Primary:  CoreDisplay private framework via dlopen (Apple Silicon + modern macOS).
+// Fallback: IODisplayConnect (Intel / older macOS).
 
 import Foundation
 import CoreGraphics
+import IOKit
+import Darwin   // dlopen / dlsym / dlclose
 
 // MARK: - BrightnessHelper
 
-/// Manages a ±1 notch brightness nudge as visual feedback that Coffeetosh is active.
-///
-/// - On activate: saves current brightness, bumps +1 notch (~6.25% of 16-step macOS scale).
-/// - On restore:  returns brightness to the saved original value.
-///
-/// Uses CoreGraphics `CGDisplayIOServicePort` → IOKit `IODisplaySetFloatParameter`.
-/// Works on built-in MacBook displays. External monitors may not respond.
 public enum BrightnessHelper {
 
     // ── Constants ───────────────────────────────────────────────
     /// One macOS brightness "notch" on a 16-step scale (F1/F2 keys).
-    private static let oneNotch: Float = 1.0 / 16.0  // ~0.0625
+    private static let oneNotch: Float = 1.0 / 16.0
 
     // ── State ───────────────────────────────────────────────────
-    /// Saved brightness before the nudge, so we can restore exactly.
     private static var savedBrightness: Float?
-    /// Saved brightness before setting to minimum (headless power saving).
     private static var savedBrightnessBeforeMin: Float?
 
     // MARK: - Public API (Nudge — visual feedback)
 
-    /// Bumps brightness up by 1 notch (clamped to 1.0).
-    /// Saves the original value for later restore.
     public static func nudgeUp() {
         guard let current = getBuiltInBrightness() else {
-            print("[BrightnessHelper] ⚠️ Could not read display brightness (external monitor?)")
+            print("[BrightnessHelper] ⚠️ Could not read display brightness")
             return
         }
-
         savedBrightness = current
         let target = min(current + oneNotch, 1.0)
-
         if setBuiltInBrightness(target) {
             print("[BrightnessHelper] 🔆 Brightness nudged: \(String(format: "%.1f%%", current * 100)) → \(String(format: "%.1f%%", target * 100))")
         }
     }
 
-    /// Restores brightness to the value saved before `nudgeUp()`.
-    /// Idempotent — safe to call if nudge never happened.
     public static func restoreOriginal() {
         guard let original = savedBrightness else { return }
-
         if setBuiltInBrightness(original) {
             print("[BrightnessHelper] 🔅 Brightness restored: \(String(format: "%.1f%%", original * 100))")
         }
@@ -58,98 +46,116 @@ public enum BrightnessHelper {
     // MARK: - Public API (Minimum — headless power saving)
 
     /// Sets display brightness to zero (fully off — backlight killed).
-    /// Saves the current value for later restore via `restoreFromMinimum()`.
+    /// Saves current value; falls back to 0.5 if brightness can't be read
+    /// (e.g. Apple Silicon during rapid state changes or display already off).
     public static func setMinimum() {
-        guard let current = getBuiltInBrightness() else {
-            print("[BrightnessHelper] ⚠️ Could not read display brightness")
-            return
-        }
-
-        savedBrightnessBeforeMin = current
-
+        savedBrightnessBeforeMin = getBuiltInBrightness() ?? 0.5
         if setBuiltInBrightness(0.0) {
             print("[BrightnessHelper] 🔅 Brightness set to 0% (screen off, system awake)")
+        } else {
+            print("[BrightnessHelper] ⚠️ Could not set brightness to 0 (display not responding)")
         }
     }
 
-    /// Restores brightness from minimum to its pre-minimum value.
     public static func restoreFromMinimum() {
         guard let original = savedBrightnessBeforeMin else { return }
-
         if setBuiltInBrightness(original) {
             print("[BrightnessHelper] 🔆 Brightness restored from minimum: \(String(format: "%.1f%%", original * 100))")
         }
         savedBrightnessBeforeMin = nil
     }
 
-    // MARK: - Public Access (for PowerSavingHelper cross-process restore)
+    // MARK: - Public Access (cross-process restore)
 
-    /// Public wrapper to read current built-in display brightness.
-    public static func getBuiltInBrightnessPublic() -> Float? {
-        return getBuiltInBrightness()
-    }
+    public static func getBuiltInBrightnessPublic() -> Float? { getBuiltInBrightness() }
 
-    /// Public wrapper to set built-in display brightness.
     @discardableResult
-    public static func setBuiltInBrightnessPublic(_ value: Float) -> Bool {
-        return setBuiltInBrightness(value)
+    public static func setBuiltInBrightnessPublic(_ value: Float) -> Bool { setBuiltInBrightness(value) }
+
+    // MARK: - Read / Write (CoreDisplay-first)
+
+    private static func getBuiltInBrightness() -> Float? {
+        if let v = coreDisplayGet() { return Float(v) }
+        return ioDisplayGet()
     }
 
-    // MARK: - IOKit Display Brightness ──────────────────────────
+    @discardableResult
+    private static func setBuiltInBrightness(_ value: Float) -> Bool {
+        if coreDisplaySet(Double(value)) { return true }
+        return ioDisplaySet(value)
+    }
 
-    /// Reads the current brightness of the built-in display (0.0 – 1.0).
-    private static func getBuiltInBrightness() -> Float? {
-        var brightness: Float = 0
+    // MARK: - CoreDisplay (Apple Silicon + macOS 12+) ────────────
+    // Uses dlopen so we don't need to link against the private framework.
+
+    private static func coreDisplayGet() -> Double? {
+        guard let handle = dlopen(
+            "/System/Library/Frameworks/CoreDisplay.framework/CoreDisplay",
+            RTLD_LAZY
+        ) else { return nil }
+        defer { dlclose(handle) }
+        guard let sym = dlsym(handle, "CoreDisplay_Display_GetUserBrightness") else { return nil }
+        typealias Fn = @convention(c) (UInt32) -> Double
+        let fn = unsafeBitCast(sym, to: Fn.self)
+        let v = fn(UInt32(CGMainDisplayID()))
+        return (v >= 0 && v <= 1) ? v : nil
+    }
+
+    @discardableResult
+    private static func coreDisplaySet(_ value: Double) -> Bool {
+        guard let handle = dlopen(
+            "/System/Library/Frameworks/CoreDisplay.framework/CoreDisplay",
+            RTLD_LAZY
+        ) else { return false }
+        defer { dlclose(handle) }
+        guard let sym = dlsym(handle, "CoreDisplay_Display_SetUserBrightness") else { return false }
+        typealias Fn = @convention(c) (UInt32, Double) -> Void
+        let fn = unsafeBitCast(sym, to: Fn.self)
+        fn(UInt32(CGMainDisplayID()), value)
+        return true
+    }
+
+    // MARK: - IODisplayConnect (Intel / older macOS fallback) ─────
+
+    private static func ioDisplayGet() -> Float? {
         var iterator: io_iterator_t = 0
-
-        let result = IOServiceGetMatchingServices(
+        guard IOServiceGetMatchingServices(
             kIOMainPortDefault,
             IOServiceMatching("IODisplayConnect"),
             &iterator
-        )
-        guard result == kIOReturnSuccess else { return nil }
+        ) == kIOReturnSuccess else { return nil }
         defer { IOObjectRelease(iterator) }
-
         var service = IOIteratorNext(iterator)
         while service != 0 {
-            var brightnessValue: Float = 0
-            let getResult = IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightnessValue)
-            if getResult == kIOReturnSuccess {
-                brightness = brightnessValue
+            var v: Float = 0
+            if IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &v) == kIOReturnSuccess {
                 IOObjectRelease(service)
-                return brightness
+                return v
             }
             IOObjectRelease(service)
             service = IOIteratorNext(iterator)
         }
-
         return nil
     }
 
-    /// Sets the brightness of the built-in display (0.0 – 1.0).
     @discardableResult
-    private static func setBuiltInBrightness(_ value: Float) -> Bool {
+    private static func ioDisplaySet(_ value: Float) -> Bool {
         var iterator: io_iterator_t = 0
-
-        let result = IOServiceGetMatchingServices(
+        guard IOServiceGetMatchingServices(
             kIOMainPortDefault,
             IOServiceMatching("IODisplayConnect"),
             &iterator
-        )
-        guard result == kIOReturnSuccess else { return false }
+        ) == kIOReturnSuccess else { return false }
         defer { IOObjectRelease(iterator) }
-
         var service = IOIteratorNext(iterator)
         while service != 0 {
-            let setResult = IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, value)
-            if setResult == kIOReturnSuccess {
+            if IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, value) == kIOReturnSuccess {
                 IOObjectRelease(service)
                 return true
             }
             IOObjectRelease(service)
             service = IOIteratorNext(iterator)
         }
-
         return false
     }
 }

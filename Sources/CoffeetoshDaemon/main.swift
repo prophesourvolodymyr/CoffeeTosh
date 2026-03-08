@@ -73,12 +73,11 @@ let lidMonitor = LidStateMonitor()
 // If the lid is ALREADY closed at start (e.g., started via SSH), apply immediately
 if lidMonitor.isLidClosed && status.mode == .headless {
     print("[coffeetosh-daemon] 🔒 Lid already closed — setting minimum brightness")
-    if let currentBrightness = BrightnessHelper.getBuiltInBrightnessPublic() {
-        var s = try! StatusFileManager.read()
-        s.originalBrightness = currentBrightness
-        s.lidClosed = true
-        try? StatusFileManager.write(s)
-    }
+    let brightnessToSave = BrightnessHelper.getBuiltInBrightnessPublic() ?? 0.5
+    var s = try! StatusFileManager.read()
+    s.originalBrightness = brightnessToSave
+    s.lidClosed = true
+    try? StatusFileManager.write(s)
     BrightnessHelper.setMinimum()
 } else {
     // Write initial lid state
@@ -120,13 +119,14 @@ while true {
         switch lidMonitor.poll() {
         case .closed:
             print("[coffeetosh-daemon] 🔒 Lid closed — saving brightness, setting minimum")
-            // Save current brightness BEFORE setting minimum
-            if let currentBrightness = BrightnessHelper.getBuiltInBrightnessPublic() {
-                var s = current
-                s.originalBrightness = currentBrightness
-                s.lidClosed = true
-                try? StatusFileManager.write(s)
-            }
+            // Save current brightness to status.json BEFORE setting minimum.
+            // Fall back to 0.5 if read fails (Apple Silicon / display already off)
+            // so restore always has a sensible value.
+            let brightnessToSave = BrightnessHelper.getBuiltInBrightnessPublic() ?? 0.5
+            var s = current
+            s.originalBrightness = brightnessToSave
+            s.lidClosed = true
+            try? StatusFileManager.write(s)
             BrightnessHelper.setMinimum()
 
         case .opened:

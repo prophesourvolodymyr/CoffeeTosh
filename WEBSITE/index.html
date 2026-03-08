@@ -11,12 +11,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="js/gsap.min.js"></script>
+  <script src="js/ScrollTrigger.min.js"></script>
+  <script src="js/TextPlugin.min.js"></script>
+  <script src="js/three.min.js"></script>
+  <script src="js/GLTFLoader.js"></script>
+  <script src="js/confetti.min.js"></script>
 
   <style>
     /* ─────────────────────────── TOKENS ─────────────────────────── */
@@ -26,11 +26,14 @@
       --bg-card:        #342920;
       --accent:         #D4923A;
       --accent-dim:     #A36820;
+      --accent-soft:    #E4B469;
       --text-primary:   #F0E6D8;
       --text-secondary: #A89680;
       --text-muted:     #7A6655;
       --latte-white:    #F5EDE3;
       --latte-text:     #2C1E12;
+      --coffee-wave:    #1A1310;
+      --coffee-wave-deep:#1A1310;
       --nav-h:          64px;
     }
 
@@ -85,7 +88,7 @@
     .nav-star-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       padding: 8px 18px;
       border-radius: 999px;
       border: 1px solid var(--accent);
@@ -97,17 +100,16 @@
       transition: background 0.2s, transform 0.15s;
     }
     .nav-star-btn:hover { background: rgba(212,146,58,0.12); transform: scale(1.03); }
-    .nav-star-icon { font-size: 13px; }
-    .star-badge {
-      background: var(--accent);
-      color: var(--bg-base);
-      font-family: 'Nunito', sans-serif;
-      font-weight: 900;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      min-width: 28px;
-      text-align: center;
+    .nav-right-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-star-icon {
+      width: 14px;
+      height: 14px;
+      color: var(--accent);
+      flex-shrink: 0;
     }
 
     /* ─────────────────────────── HERO ───────────────────────────── */
@@ -119,8 +121,12 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: calc(var(--nav-h) + 40px) 24px 80px;
-      overflow: hidden;
+      padding: calc(var(--nav-h) + 40px) 0 40px;
+      overflow: visible;
+    }
+    .hero-inner {
+      padding: 0 24px;
+      width: 100%;
     }
     #steam-canvas {
       position: absolute;
@@ -137,6 +143,7 @@
       gap: 20px;
       max-width: 860px;
       width: 100%;
+      padding: 0 24px;
     }
     .live-badge {
       display: inline-flex;
@@ -183,41 +190,16 @@
     /* ── Illustration ── */
     .hero-illus {
       position: relative;
-      width: 620px;
-      max-width: 100%;
-      height: 340px;
-      opacity: 0;
+      width: 100vw;
+      height: 80vh;
+      margin-top: -10px;
+      flex-shrink: 0;
     }
-    /* Three.js laptop canvas fills the illustration area */
     #laptop-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      border-radius: 12px;
-    }
-    .phone-wrap {
-      position: absolute;
-      opacity: 0;
-      z-index: 2;
-    }
-    .phone-wrap svg { width: 52px; }
-    .phone-left  { left: 20px;  bottom: 50px; }
-    .phone-right { right: 20px; bottom: 50px; }
-    .phone-bottom { left: 50%; bottom: 0; transform: translateX(-50%); }
-    .connect-lines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .c-line {
-      stroke: var(--accent);
-      stroke-width: 1.5;
-      stroke-dasharray: 6 4;
-      fill: none;
-      stroke-dashoffset: 200;
-      transition: stroke-dashoffset 0s;
     }
     .glow-ring {
       position: absolute;
@@ -277,14 +259,12 @@
     }
 
     /* ─────────────────────── FEATURES SECTION ───────────────────── */
-    /* Tall section so scroll-scrub has room: 100vh pin + 3 scenes × 100vh */
     .features-section {
       position: relative;
-      height: 500vh;
+      min-height: 100vh;
     }
     .features-pin-container {
-      position: sticky;
-      top: 0;
+      position: relative;
       width: 100%;
       height: 100vh;
       display: flex;
@@ -296,22 +276,39 @@
     /* Scroll progress indicator */
     .scroll-indicator {
       position: absolute;
-      right: 32px;
+      right: 20px;
       top: 50%;
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       z-index: 20;
       opacity: 0;
-      transition: opacity 0.4s;
+      padding: 8px 8px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(212,146,58,0.14);
+      background: rgba(42,32,25,0.64);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+      transition: opacity 0.4s, transform 0.4s;
     }
-    .scroll-indicator.visible { opacity: 1; }
+    .scroll-indicator.visible {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+    .scroll-ind-step {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--accent-soft);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
     .scroll-ind-track {
-      width: 3px;
-      height: 80px;
-      background: rgba(255,255,255,0.1);
+      width: 4px;
+      height: 76px;
+      background: rgba(245,237,227,0.12);
       border-radius: 999px;
       overflow: hidden;
       position: relative;
@@ -321,50 +318,16 @@
       background: var(--accent);
       border-radius: 999px;
       height: 0%;
-      transition: height 0.1s linear;
       position: absolute;
       top: 0;
     }
     .scroll-ind-label {
       font-family: 'Inter', sans-serif;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      writing-mode: vertical-lr;
-      text-orientation: mixed;
-      transform: rotate(180deg);
-      margin-top: 6px;
-    }
-    /* Arrow bounce hint */
-    .scroll-arrow-hint {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.5s;
-      pointer-events: none;
-      z-index: 20;
-    }
-    .scroll-arrow-hint.visible { opacity: 1; }
-    .scroll-arrow-hint span {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-    .scroll-arrow-hint svg {
-      animation: arrowBounce 1.4s ease-in-out infinite;
-      color: var(--accent);
-    }
-    @keyframes arrowBounce {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(6px); }
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
     .scene {
       position: absolute;
@@ -379,6 +342,7 @@
     .scene.active {
       opacity: 1;
       pointer-events: all;
+      z-index: 2;
     }
     .scene-inner {
       display: grid;
@@ -444,24 +408,31 @@
     }
     .ghost-btn:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.03); }
 
-    /* Pagination dots */
-    .scene-dots {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 10;
+    /* ── Scene 1: Video ── */
+    .feature-video-card {
+      width: min(100%, 620px);
+      padding: 14px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(245,237,227,0.06) 0%, rgba(42,32,25,0.92) 100%);
+      border: 1px solid rgba(212,146,58,0.18);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.42);
     }
-    .scene-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      transition: background 0.3s, transform 0.3s;
+    .feature-video-frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      aspect-ratio: 16 / 10;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(228,180,105,0.18), transparent 40%),
+        linear-gradient(145deg, rgba(108,65,32,0.35), rgba(26,19,16,0.95));
     }
-    .scene-dot.filled { background: var(--accent); transform: scale(1.25); }
+    .feature-video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: transparent;
+    }
 
     /* ── Scene 1: Dock / Popover ── */
     .macos-dock-wrap {
@@ -887,12 +858,21 @@
       align-items: center;
       gap: 24px;
       text-align: center;
+      position: relative;
     }
-    .price-slot-wrap {
-      height: 80px;
-      overflow: hidden;
+    #price-slot-display {
       position: relative;
       width: 100%;
+      min-height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #price-reel-container {
+      position: relative;
+      overflow: hidden;
+      height: 112px !important;
+      width: 100% !important;
     }
     .price-reel {
       position: absolute;
@@ -900,14 +880,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
     }
     .price-tick {
-      height: 80px;
+      height: 112px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 2px;
+      gap: 8px;
       flex-shrink: 0;
     }
     .price-amount {
@@ -919,9 +900,13 @@
     }
     .price-free-display {
       display: none;
+      position: absolute;
+      inset: 0;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 10px;
+      padding-top: 4px;
     }
     .price-free-display.visible { display: flex; }
     .price-free-amount {
@@ -945,6 +930,10 @@
       font-size: 14px;
       font-family: 'Inter', sans-serif;
       color: var(--text-muted);
+      line-height: 1;
+      margin-top: 2px;
+      position: relative;
+      z-index: 1;
     }
     .benefits-list {
       list-style: none;
@@ -1020,6 +1009,7 @@
       flex-direction: column;
       align-items: center;
       gap: 56px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
     }
     .download-cols {
       display: grid;
@@ -1094,6 +1084,59 @@
     }
     .copy-btn:hover { color: var(--accent); background: rgba(212,146,58,0.1); }
 
+    /* ─────────────────────── FAQ ───────────────────────────────── */
+    .faq-section {
+      padding: 40px 24px 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .faq-grid {
+      width: 100%;
+      max-width: 920px;
+      display: grid;
+      gap: 14px;
+    }
+    .faq-item {
+      border-radius: 16px;
+      border: 1px solid rgba(212,146,58,0.16);
+      background: linear-gradient(180deg, rgba(52,41,32,0.86), rgba(42,32,25,0.96));
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+    }
+    .faq-item summary {
+      list-style: none;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text-primary);
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+';
+      font-size: 24px;
+      color: var(--accent);
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-answer {
+      padding: 0 22px 22px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 760px;
+    }
+
     /* ─────────────────────── FOOTER ─────────────────────────────── */
     .site-footer {
       background: var(--latte-white);
@@ -1103,10 +1146,41 @@
     }
     /* Coffee wave separator */
     .footer-wave-wrap {
+      position: relative;
       line-height: 0;
-      overflow: hidden;
+      overflow: visible;
+      height: 120px;
     }
-    .footer-wave-wrap svg { display: block; width: 100%; }
+    .footer-wave-wrap svg { display: block; width: 100%; height: 120px; }
+    .footer-drips {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .footer-drip {
+      position: absolute;
+      width: 13px;
+      height: 19px;
+      border-radius: 50% 50% 55% 55% / 40% 40% 60% 60%;
+      background: linear-gradient(to bottom, #3d1a06, #1e0c02);
+      opacity: 0;
+      transform-origin: top center;
+      animation: dripFall 5s ease-in infinite;
+    }
+    .drip-1 { left: 13%; top: 26px; animation-delay: 0.3s; }
+    .drip-2 { left: 31%; top: 42px; animation-delay: 1.6s; width: 10px; height: 14px; }
+    .drip-3 { left: 51%; top: 71px; animation-delay: 0.85s; width: 15px; height: 22px; }
+    .drip-4 { left: 68%; top: 36px; animation-delay: 2.5s; width: 11px; height: 16px; }
+    .drip-5 { left: 83%; top: 43px; animation-delay: 3.6s; width: 9px; height: 13px; }
+    @keyframes dripFall {
+      0%   { opacity: 0;   transform: translateY(-5px)  scaleY(0.5) scaleX(1);    }
+      10%  { opacity: 0.9; transform: translateY(0)      scaleY(1.5) scaleX(0.82); }
+      19%  { opacity: 1;   transform: translateY(2px)   scaleY(1.8) scaleX(0.76); }
+      23%  { opacity: 1;   transform: translateY(0)      scaleY(1)   scaleX(1);    }
+      60%  { opacity: 1;   transform: translateY(52px)  scaleY(0.95) scaleX(1.05); }
+      80%  { opacity: 0.5; transform: translateY(92px)  scaleY(0.9)  scaleX(1.1);  }
+      100% { opacity: 0;   transform: translateY(130px) scaleY(0.85) scaleX(1.15); }
+    }
     /* Coffee ring decorations inside footer */
     .footer-rings {
       position: absolute;
@@ -1169,9 +1243,7 @@
     .footer-links a:hover { color: var(--accent); }
     .footer-sep { color: rgba(44,30,18,0.35); font-size: 14px; }
     .footer-stars {
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      color: rgba(44,30,18,0.55);
+      color: rgba(44,30,18,0.7);
     }
     .footer-copy {
       font-family: 'Inter', sans-serif;
@@ -1181,23 +1253,38 @@
 
     /* ─────────────────────── RESPONSIVE ─────────────────────────── */
     @media (max-width: 767px) {
+      .features-section { min-height: auto; }
+      .features-pin-container {
+        height: auto;
+        display: block;
+        padding: 18px 0 0;
+      }
+      .scene {
+        position: relative;
+        opacity: 1;
+        pointer-events: all;
+        padding: 36px 18px;
+      }
       .scene-inner {
         grid-template-columns: 1fr;
         gap: 32px;
         padding: 0 0 60px;
-        overflow-y: auto;
+        overflow-y: visible;
       }
-      .hero-illus { height: 240px; }
+      .hero-illus { width: 100vw; height: 85vh; margin-top: 4px; }
       .download-cols { grid-template-columns: 1fr; }
       .stat-cards { grid-template-columns: repeat(3,1fr); }
       .hero { padding-top: calc(var(--nav-h) + 24px); }
       .scene-visual { display: flex; justify-content: center; }
       .terminal-window, .dashboard-window { max-width: 100%; }
       .nav { padding: 0 18px; }
+      .scroll-indicator { display: none !important; }
     }
     @media (max-width: 480px) {
       .download-cols { grid-template-columns: 1fr; }
       .pricing-card { padding: 32px 20px; }
+      .stat-cards { grid-template-columns: repeat(2,1fr); }
+      .faq-item summary { font-size: 18px; }
     }
   </style>
 </head>
@@ -1255,16 +1342,21 @@
       </svg>
       <span class="nav-name">Coffeetosh</span>
     </a>
-    <a href="https://github.com/prophesourvolodymyr/CoffeeTosh" target="_blank" rel="noopener noreferrer" class="nav-star-btn" aria-label="Star Coffeetosh on GitHub">
-      <span class="nav-star-icon">★</span>
-      <span>Star on GitHub</span>
-      <span class="star-badge" id="nav-star-count">—</span>
-    </a>
+    <div class="nav-right-group">
+      <a href="https://github.com/prophesourvolodymyr/CoffeeTosh" target="_blank" rel="noopener noreferrer" class="nav-star-btn" aria-label="Star Coffeetosh on GitHub">
+        <svg class="nav-star-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3.5l2.66 5.4 5.96.87-4.3 4.2 1.02 5.93L12 17.1 6.66 19.9l1.02-5.93-4.3-4.2 5.96-.87L12 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Star on GitHub
+      </a>
+    </div>
   </nav>
 
   <!-- ════════════════════════ HERO ════════════════════════ -->
   <section class="hero" aria-label="Hero">
     <canvas id="steam-canvas" aria-hidden="true"></canvas>
+
+    <!-- Text block (max-width constrained) -->
     <div class="hero-inner">
       <div class="live-badge" id="live-badge" aria-label="Status indicator">
         <span class="live-dot" aria-hidden="true"></span>
@@ -1276,69 +1368,22 @@
       </h1>
 
       <p class="hero-sub">The open-source sleep preventer for macOS. No root hacks. Free forever.</p>
+    </div>
 
-      <!-- Illustration -->
-      <div class="hero-illus" id="hero-illus" aria-hidden="true">
-        <svg class="connect-lines" id="connect-svg" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
-          <path class="c-line" id="line-left"   d="M 110 200 Q 200 160 280 180" />
-          <path class="c-line" id="line-right"  d="M 450 200 Q 360 160 280 180" />
-          <path class="c-line" id="line-bottom" d="M 280 280 Q 280 240 280 200" />
+    <!-- 3D illustration — direct child of .hero so width:100vw works exactly as in Section 1 -->
+    <div class="hero-illus" id="hero-illus" aria-hidden="true">
+      <div class="glow-ring" id="glow-ring"></div>
+      <canvas id="laptop-canvas" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- CTA -->
+    <div class="hero-cta-wrap" id="hero-cta-wrap">
+      <a href="#download-section" class="hero-btn" id="hero-btn" aria-label="Scroll to Coffeetosh downloads">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-
-        <div class="glow-ring" id="glow-ring"></div>
-
-        <!-- Three.js laptop canvas -->
-        <canvas id="laptop-canvas" aria-hidden="true"></canvas>
-
-        <!-- Phone Left -->
-        <div class="phone-wrap phone-left" id="phone-left">
-          <svg viewBox="0 0 52 90" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="46" height="84" rx="9" fill="#111" stroke="#444" stroke-width="1.5"/>
-            <rect x="9" y="12" width="34" height="60" rx="3" fill="#1a2030"/>
-            <circle cx="26" cy="80" r="3.5" fill="#333"/>
-            <rect x="20" y="6" width="12" height="3" rx="1.5" fill="#333"/>
-            <line x1="13" y1="28" x2="39" y2="28" stroke="#4a8caa" stroke-width="1" opacity="0.4"/>
-            <line x1="13" y1="36" x2="33" y2="36" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-            <line x1="13" y1="44" x2="36" y2="44" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-          </svg>
-        </div>
-
-        <!-- Phone Right -->
-        <div class="phone-wrap phone-right" id="phone-right">
-          <svg viewBox="0 0 52 90" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="46" height="84" rx="9" fill="#111" stroke="#444" stroke-width="1.5"/>
-            <rect x="9" y="12" width="34" height="60" rx="3" fill="#1a2030"/>
-            <circle cx="26" cy="80" r="3.5" fill="#333"/>
-            <rect x="20" y="6" width="12" height="3" rx="1.5" fill="#333"/>
-            <line x1="13" y1="28" x2="39" y2="28" stroke="#4a8caa" stroke-width="1" opacity="0.4"/>
-            <line x1="13" y1="36" x2="33" y2="36" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-            <line x1="13" y1="44" x2="36" y2="44" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-          </svg>
-        </div>
-
-        <!-- Phone Bottom -->
-        <div class="phone-wrap phone-bottom" id="phone-bottom" style="margin-left:-26px;">
-          <svg viewBox="0 0 52 90" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="46" height="84" rx="9" fill="#111" stroke="#444" stroke-width="1.5"/>
-            <rect x="9" y="12" width="34" height="60" rx="3" fill="#1a2030"/>
-            <circle cx="26" cy="80" r="3.5" fill="#333"/>
-            <rect x="20" y="6" width="12" height="3" rx="1.5" fill="#333"/>
-            <line x1="13" y1="28" x2="39" y2="28" stroke="#4a8caa" stroke-width="1" opacity="0.4"/>
-            <line x1="13" y1="36" x2="33" y2="36" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-            <line x1="13" y1="44" x2="36" y2="44" stroke="#4a8caa" stroke-width="0.8" opacity="0.3"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="hero-cta-wrap" id="hero-cta-wrap">
-        <a href="download.html" class="hero-btn" id="hero-btn" aria-label="Download Coffeetosh for Mac">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span id="hero-btn-text">Download for Mac</span>
-        </a>
-      </div>
+        <span id="hero-btn-text">Download for Mac</span>
+      </a>
     </div>
   </section>
 
@@ -1367,111 +1412,19 @@
         <div class="scene-inner">
           <div class="scene-text">
             <div class="scene-num" aria-hidden="true">01</div>
-            <h2 class="scene-heading">Invisible by default</h2>
-            <p class="scene-body">Lives quietly in your menu bar. Open it with a click, or wake the full controls with Option+Click.</p>
+            <h2 class="scene-heading">See the app before you install it</h2>
+            <p class="scene-body">This slot now plays your real product video. Drop in the export, and the section stays clean, pinned, and fully tied to the scroll flow.</p>
             <div class="scene-btn-row">
               <button class="confetti-btn" id="btn-s1" aria-label="Nice, advance to next feature">Nice, I'll keep it</button>
             </div>
           </div>
           <div class="scene-visual">
-            <div class="macos-dock-wrap" id="dock-wrap">
-              <div class="popover-mockup" id="popover-mockup" aria-label="Coffeetosh popover UI mockup" style="position:relative;">
-                <!-- Mode row -->
-                <div class="popover-mode-row">
-                  <span class="popover-mode-label">Mode</span>
-                  <div class="seg-control" role="group" aria-label="Mode selector">
-                    <div class="seg-btn active">Keep Awake</div>
-                    <div class="seg-btn">Headless SSH</div>
-                  </div>
-                </div>
-                <!-- Timer -->
-                <div class="popover-timer">
-                  <div class="popover-timer-text">01:00:00</div>
-                </div>
-                <!-- Duration chips (2 rows of 5) -->
-                <div class="duration-chips" aria-label="Duration options">
-                  <div class="chip">30m</div>
-                  <div class="chip active">1h</div>
-                  <div class="chip">2h</div>
-                  <div class="chip">3h</div>
-                  <div class="chip">4h</div>
-                  <div class="chip">6h</div>
-                  <div class="chip">8h</div>
-                  <div class="chip">12h</div>
-                  <div class="chip">24h</div>
-                  <div class="chip">∞</div>
-                </div>
-                <!-- Start button -->
-                <div class="popover-start-btn" aria-label="Start Session">Start Session</div>
-                <!-- Footer -->
-                <div class="popover-footer">
-                  <svg class="popover-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Settings">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-                  </svg>
-                  <span class="popover-footer-quit">Quit</span>
-                </div>
+            <div class="feature-video-card" aria-label="Homepage product demo video">
+              <div class="feature-video-frame">
+                <video class="feature-video" muted loop playsinline preload="metadata" poster="assets/homepage-scene-1-poster.jpg">
+                  <source src="assets/homepage-scene-1.mp4" type="video/mp4" />
+                </video>
               </div>
-              <div class="macos-dock" id="macos-dock" role="img" aria-label="macOS dock mockup">
-                <!-- Finder icon -->
-                <div class="dock-icon" aria-label="Finder">
-                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="30" height="30" rx="7" fill="#2986CC"/>
-                    <ellipse cx="10" cy="15" rx="3" ry="4" fill="white" opacity="0.9"/>
-                    <ellipse cx="20" cy="15" rx="3" ry="4" fill="white" opacity="0.9"/>
-                    <circle cx="9.5" cy="14" r="1.2" fill="#2986CC"/>
-                    <circle cx="19.5" cy="14" r="1.2" fill="#2986CC"/>
-                    <path d="M 10 19 Q 15 22 20 19" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                  </svg>
-                </div>
-                <!-- Safari icon -->
-                <div class="dock-icon" aria-label="Safari">
-                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="30" height="30" rx="7" fill="#1c6db5"/>
-                    <circle cx="15" cy="15" r="10" stroke="white" stroke-width="1.2" fill="none"/>
-                    <line x1="15" y1="5" x2="15" y2="25" stroke="white" stroke-width="0.8" opacity="0.4"/>
-                    <line x1="5" y1="15" x2="25" y2="15" stroke="white" stroke-width="0.8" opacity="0.4"/>
-                    <polygon points="12,10 20,13 17,21 9,18" fill="none" stroke="white" stroke-width="1" opacity="0.7"/>
-                    <circle cx="15" cy="15" r="1.5" fill="white"/>
-                    <line x1="11" y1="11" x2="19" y2="19" stroke="#e05" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="19" y1="11" x2="11" y2="19" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </div>
-                <!-- Coffeetosh icon -->
-                <div class="dock-icon coffeetosh-icon" id="dock-coffeetosh" aria-label="Coffeetosh">
-                  <div id="dock-cup-outline" style="position:absolute;">
-                    <svg width="30" height="30" viewBox="-2 0 28 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5"/>
-                      <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8"/>
-                      <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6"/>
-                      <line x1="8" y1="10.5" x2="8" y2="12.5"/><line x1="14" y1="10.5" x2="14" y2="12.5"/>
-                      <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1"/><path d="M8 16 Q 11 18.5 14 16"/>
-                    </svg>
-                  </div>
-                  <div id="dock-cup-filled" style="position:absolute;opacity:0;">
-                    <svg width="30" height="30" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <defs>
-                        <mask id="dock-face-mask">
-                          <rect x="0" y="0" width="24" height="24" fill="white"/>
-                          <g fill="none" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="10.5" x2="8" y2="12.5"/><line x1="14" y1="10.5" x2="14" y2="12.5"/>
-                            <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1"/><path d="M8 16 Q 11 18.5 14 16"/>
-                          </g>
-                        </mask>
-                      </defs>
-                      <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                      <path d="M 2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5 A 8.5 2.8 0 0 1 2.5 5.5 Z" fill="currentColor" mask="url(#dock-face-mask)"/>
-                      <path d="M 2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                      <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/>
-                    </svg>
-                  </div>
-                  <div class="dock-tooltip" id="dock-tooltip">Option+Click to open full menu</div>
-                </div>
-              </div>
-              <!-- Cursor -->
-              <svg class="dock-cursor" id="dock-cursor" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
-                <path d="M3 3 L3 22 L8 17 L12 25 L15 23.5 L11 16 L18 16 Z" fill="white" stroke="#333" stroke-width="1"/>
-              </svg>
             </div>
           </div>
         </div>
@@ -1580,27 +1533,13 @@
         </div>
       </div>
 
-      <!-- Pagination dots -->
-      <div class="scene-dots" aria-label="Feature section progress" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3">
-        <div class="scene-dot filled" id="dot-1"></div>
-        <div class="scene-dot" id="dot-2"></div>
-        <div class="scene-dot" id="dot-3"></div>
-      </div>
-
       <!-- Scroll indicator (right side) -->
       <div class="scroll-indicator" id="scroll-indicator" aria-hidden="true">
+        <span class="scroll-ind-step" id="scroll-ind-step">01 / 03</span>
         <div class="scroll-ind-track">
           <div class="scroll-ind-fill" id="scroll-ind-fill"></div>
         </div>
-        <span class="scroll-ind-label">SCROLL</span>
-      </div>
-
-      <!-- Arrow hint at bottom -->
-      <div class="scroll-arrow-hint" id="scroll-arrow-hint" aria-hidden="true">
-        <span>scroll to explore</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <polyline points="6,9 12,15 18,9"/>
-        </svg>
+        <span class="scroll-ind-label">Scroll</span>
       </div>
     </div>
   </section>
@@ -1650,7 +1589,7 @@
         <li><span class="checkmark"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>macOS 13+ Ventura</li>
       </ul>
       <div class="pricing-btns">
-        <a href="download.html" class="btn-amber" aria-label="Download for Mac">Download for Mac</a>
+        <a href="#download-section" class="btn-amber" aria-label="Scroll to Coffeetosh downloads">Download for Mac</a>
         <a href="https://github.com/prophesourvolodymyr/CoffeeTosh" target="_blank" rel="noopener noreferrer" class="btn-outline" aria-label="Star on GitHub">★ Star on GitHub</a>
       </div>
     </div>
@@ -1708,14 +1647,44 @@
     </div>
   </section>
 
+  <!-- ════════════════════════ FAQ ════════════════════════ -->
+  <section class="faq-section" id="faq-section" aria-label="Frequently asked questions">
+    <h2 class="sec-heading">Questions Before You Install?</h2>
+    <div class="faq-grid">
+      <details class="faq-item" open>
+        <summary>What does Coffeetosh actually do?</summary>
+        <div class="faq-answer">Coffeetosh keeps your Mac awake when you need it, including lid-closed workflows, while still giving you explicit session control through the menu bar app and the CLI.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Does it need root access or unsafe hacks?</summary>
+        <div class="faq-answer">No. The project is built to work as a normal macOS app and command-line tool without asking you to disable system protections or run invasive background hacks.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I use it from Terminal only?</summary>
+        <div class="faq-answer">Yes. Coffeetosh includes CLI commands for starting sessions, checking status, saving presets, and stopping wake locks without opening the GUI.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is it free and open source?</summary>
+        <div class="faq-answer">Yes. Coffeetosh is free to use, open source, and MIT licensed. You can install the app directly or inspect the code on GitHub.</div>
+      </details>
+    </div>
+  </section>
+
   <!-- ════════════════════════ FOOTER ════════════════════════ -->
   <footer class="site-footer" aria-label="Site footer">
-    <!-- Smooth wave separator -->
+    <!-- Coffee wave separator -->
     <div class="footer-wave-wrap">
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M0 30 C 240 60 480 0 720 30 C 960 60 1200 0 1440 30 L1440 60 L0 60 Z" fill="#F5EDE3"/>
-        <path d="M0 30 C 240 60 480 0 720 30 C 960 60 1200 0 1440 30" fill="none" stroke="rgba(180,110,40,0.18)" stroke-width="1.5"/>
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M0 0 H1440 V42 C1315 62 1178 14 1026 34 C871 54 760 92 615 68 C447 40 280 14 0 40 Z" fill="var(--coffee-wave)"/>
+        <path d="M0 38 C215 8 381 56 582 72 C780 88 924 24 1122 24 C1263 24 1355 42 1440 30" fill="none" stroke="rgba(245,237,227,0.22)" stroke-width="3" stroke-linecap="round"/>
       </svg>
+      <div class="footer-drips" aria-hidden="true">
+        <span class="footer-drip drip-1"></span>
+        <span class="footer-drip drip-2"></span>
+        <span class="footer-drip drip-3"></span>
+        <span class="footer-drip drip-4"></span>
+        <span class="footer-drip drip-5"></span>
+      </div>
     </div>
     <!-- Coffee ring decorations -->
     <div class="footer-rings" aria-hidden="true">
@@ -1746,7 +1715,6 @@
         <span class="footer-sep">·</span>
         <a href="https://github.com/prophesourvolodymyr/CoffeeTosh" target="_blank" rel="noopener noreferrer">GitHub</a>
       </nav>
-      <div class="footer-stars">★ <span id="footer-star-count">—</span> stars on GitHub</div>
       <div class="footer-copy">© 2025 Coffeetosh. MIT License. Open Source.</div>
     </div>
   </footer>
@@ -1755,195 +1723,783 @@
   <script>
     gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
-    /* ─── GitHub Stars ─── */
-    (function fetchStars() {
-      fetch('https://api.github.com/repos/prophesourvolodymyr/CoffeeTosh')
-        .then(r => r.json())
-        .then(d => {
-          const n = d.stargazers_count ?? '—';
-          const el1 = document.getElementById('nav-star-count');
-          const el2 = document.getElementById('footer-star-count');
-          if (el1) el1.textContent = n;
-          if (el2) el2.textContent = n;
-        })
-        .catch(() => {});
-    })();
+    /* ─── Confetti burst ─── */
+    function fireConfetti() {
+      if (typeof confetti !== 'function') return;
+      confetti({ particleCount: 80, spread: 90, colors: ['#D4923A', '#F0E6D8', '#ffffff'], origin: { y: 0.6 } });
+    }
 
-    /* ─── Three.js Laptop (GLB) ─── */
-    (function initLaptop3D() {
-      const canvas = document.getElementById('laptop-canvas');
-      if (!canvas || typeof THREE === 'undefined') return;
-      if (typeof THREE.GLTFLoader === 'undefined') { console.warn('GLTFLoader not loaded'); return; }
+        /* --- Three.js Hero - Full MacBook + Phones (Section 1) --- */
+    (function(){
+  /* Rounded box helper (from animation1 composition). */
+  function makeRoundedBoxGeo(w, h, d, r) {
+    const shape = new THREE.Shape();
+    const hw = w / 2 - r;
+    const hh = h / 2 - r;
+    shape.moveTo(-hw, -h / 2);
+    shape.lineTo(hw, -h / 2);
+    shape.quadraticCurveTo(w / 2, -h / 2, w / 2, -hh);
+    shape.lineTo(w / 2, hh);
+    shape.quadraticCurveTo(w / 2, h / 2, hw, h / 2);
+    shape.lineTo(-hw, h / 2);
+    shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, hh);
+    shape.lineTo(-w / 2, -hh);
+    shape.quadraticCurveTo(-w / 2, -h / 2, -hw, -h / 2);
+    const geo = new THREE.ExtrudeGeometry(shape, {
+      depth: d,
+      bevelEnabled: true,
+      bevelThickness: Math.min(r * 0.3, d * 0.3),
+      bevelSize: Math.min(r * 0.3, 0.02),
+      bevelSegments: 3,
+    });
+    geo.center();
+    return geo;
+  }
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  /* ── Word stagger ── */
+  const words = document.querySelectorAll('.hero-headline .word');
+  words.forEach((w, i) => {
+    w.style.transition = `opacity .45s ease ${.35 + i * .1}s, transform .45s ease ${.35 + i * .1}s`;
+    requestAnimationFrame(() => { w.style.opacity = '1'; w.style.transform = 'translateY(0)'; });
+  });
 
-      const scene  = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-      camera.position.set(0, 1.8, 5.5);
-      camera.lookAt(0, 0.2, 0);
+  /* ── Three.js setup ── */
+  const canvas = document.getElementById('laptop-canvas');
+  const container = document.getElementById('hero-illus');
+  const W = container.clientWidth, H = container.clientHeight;
 
-      function resizeLaptop() {
-        const w = canvas.clientWidth, h = canvas.clientHeight;
-        renderer.setSize(w, h, false);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const scene = new THREE.Scene();
+  const isMobile = W < 700;
+  const camera = new THREE.PerspectiveCamera(isMobile ? 60 : 35, W / H, 0.01, 100);
+  camera.position.set(0, isMobile ? 0.6 : 0.55, isMobile ? 3.5 : 3.0);
+  camera.lookAt(0, -0.2, 0);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const dLight = new THREE.DirectionalLight(0xfff5e0, 1.1);
+  dLight.position.set(3, 5, 4);
+  scene.add(dLight);
+  const pLight = new THREE.PointLight(0xD4923A, 0.7, 2.5);
+  pLight.position.set(0, 0.2, 0.6);
+  scene.add(pLight);
+
+  /* Master group for idle float */
+  const masterGroup = new THREE.Group();
+  scene.add(masterGroup);
+
+  /* ── Screen media — video plays on open Mac, auto-closes 1s before end ── */
+  const ENABLE_SCREEN_VIDEO = true;
+  const video = document.createElement('video');
+  if (ENABLE_SCREEN_VIDEO) {
+    video.src = 'assets/Maxine.mp4';
+    video.loop = false;
+    video.muted = true;
+    video.playsInline = true;
+    video.playbackRate = 1.5;
+    video.crossOrigin = 'anonymous';
+    video.load();
+  }
+  let videoReady = false;
+  let screenCandidate = null;
+
+  /* Trigger auto-close 1 second before video ends */
+  video.addEventListener('timeupdate', function() {
+    if (heroState !== 'PLAYING') return;
+    if (video.duration && video.currentTime >= video.duration - 1) {
+      startAutoClose();
+    }
+  });
+
+  /* Phones: AnimatedTerminal — live 2D canvas terminal mapped onto 3D phone screens. */
+class AnimatedTerminal {
+  constructor(side) {
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = 300;
+    this.canvas.height = 649;
+    this.ctx = this.canvas.getContext('2d');
+    this.texture = new THREE.CanvasTexture(this.canvas);
+    this.texture.encoding = THREE.sRGBEncoding;
+    this.texture.anisotropy = 4;
+
+    this.side = side;
+    this.typingIndex = 0;
+    this.lines = [];          // completed lines
+    this.currentLineChars = 0;
+    this.timer = 0;
+    this.started = false;
+    this.cursorVisible = true;
+    this.cursorTimer = 0;
+
+    if (side === 'L') {
+      this.script = [
+        { text: "admin@iphone:~ $ ssh my-mac",              delay: 0.6, typeSpeed: 0.045 },
+        { text: "Connecting to my-mac.local...",             delay: 0.3, typeSpeed: 0 },
+        { text: "ECDSA key fingerprint SHA256:xK9...",       delay: 0.15, typeSpeed: 0 },
+        { text: "Warning: added 'my-mac' (ED25519) to known hosts.", delay: 0.2, typeSpeed: 0 },
+        { text: "admin@my-mac's password: ********",         delay: 0.5, typeSpeed: 0.07 },
+        { text: "Last login: Sat Mar  7 09:12 on ttys001",   delay: 0.15, typeSpeed: 0 },
+        { text: "Access granted.",                           delay: 0.25, typeSpeed: 0 },
+        { text: "> Coffeetosh Daemon active.",               delay: 0.6, typeSpeed: 0.03 },
+      ];
+    } else {
+      this.script = [
+        { text: "guest@iphone:~ $ systemctl status cmd",     delay: 0.9, typeSpeed: 0.04 },
+        { text: "\u25CF cmd.service - Link Manager",              delay: 0.25, typeSpeed: 0 },
+        { text: "   Loaded: loaded (/etc/systemd/system/)",  delay: 0.1, typeSpeed: 0 },
+        { text: "   Active: active (running) since 09:14",   delay: 0.35, typeSpeed: 0 },
+        { text: "   PID: 4821 (coffeetoshd)",                delay: 0.1, typeSpeed: 0 },
+        { text: "Starting secondary diagnostic ping...",     delay: 0.4, typeSpeed: 0 },
+        { text: "64 bytes from 192.168.1.10: time=1.2ms",   delay: 0.22, typeSpeed: 0 },
+        { text: "64 bytes from 192.168.1.10: time=1.1ms",   delay: 0.18, typeSpeed: 0 },
+        { text: "64 bytes from 192.168.1.10: time=0.9ms",   delay: 0.18, typeSpeed: 0 },
+        { text: "> Secure Stream OK.",                       delay: 0.6, typeSpeed: 0.045 },
+      ];
+    }
+
+    this.redraw();
+  }
+
+  start() {
+    if (this.started) return;
+    this.started = true;
+    this.timer = this.script.length > 0 ? this.script[0].delay : 0;
+  }
+
+  reset() {
+    this.typingIndex = 0;
+    this.lines = [];
+    this.currentLineChars = 0;
+    this.timer = this.script.length > 0 ? this.script[0].delay : 0;
+    this.started = false;
+    this.cursorVisible = true;
+    this.cursorTimer = 0;
+    this.redraw();
+  }
+
+  update(dt) {
+    /* Blink cursor every 0.5s even while idle */
+    this.cursorTimer += dt;
+    if (this.cursorTimer >= 0.5) {
+      this.cursorTimer -= 0.5;
+      this.cursorVisible = !this.cursorVisible;
+      if (this.started) this.redraw();
+    }
+
+    if (!this.started || this.typingIndex >= this.script.length) return;
+
+    this.timer -= dt;
+    const activeLine = this.script[this.typingIndex];
+    let dirty = false;
+
+    if (this.timer <= 0) {
+      if (activeLine.typeSpeed > 0 && this.currentLineChars < activeLine.text.length) {
+        /* Character-by-character typing */
+        this.currentLineChars++;
+        this.timer = activeLine.typeSpeed + (Math.random() * 0.025 - 0.01);
+        dirty = true;
+      } else {
+        /* Line complete — commit and advance */
+        this.lines.push(activeLine.text);
+        this.typingIndex++;
+        this.currentLineChars = 0;
+        if (this.typingIndex < this.script.length) {
+          this.timer = this.script[this.typingIndex].delay;
+        }
+        dirty = true;
       }
-      resizeLaptop();
-      window.addEventListener('resize', resizeLaptop);
+    }
 
-      /* ── Lights ── */
-      const ambLight = new THREE.AmbientLight(0xffffff, 0.35);
-      scene.add(ambLight);
+    if (dirty) this.redraw();
+  }
 
-      const keyLight = new THREE.DirectionalLight(0xfff4e8, 1.8);
-      keyLight.position.set(3, 6, 4);
-      keyLight.castShadow = true;
-      scene.add(keyLight);
+  /* Determine text color based on content */
+  _colorForLine(line) {
+    if (line.startsWith('>'))                                     return '#D4923A'; // accent orange
+    if (line.includes('Coffeetosh') || line.includes('Secure'))   return '#D4923A';
+    if (line.includes('granted') || line.includes('active (run')) return '#98c379'; // green
+    if (line.includes('192.168') || line.includes('time='))       return '#D4923A'; // IP/port orange
+    if (line.startsWith('admin') || line.startsWith('guest'))     return '#61afef'; // blue prompt
+    if (line.includes('$ '))                                      return '#ffffff'; // command white
+    if (line.includes('PID:') || line.includes('Loaded:'))        return '#5c6370'; // dim grey
+    return '#abb2bf';                                                               // default muted
+  }
 
-      const fillLight = new THREE.DirectionalLight(0x4080ff, 0.4);
-      fillLight.position.set(-4, 2, -2);
-      scene.add(fillLight);
+  redraw() {
+    const c = this.ctx;
+    const W = 300, H = 649;
 
-      /* Amber point light — intensity driven by lid progress */
-      const amberLight = new THREE.PointLight(0xD4923A, 1.5, 8);
-      amberLight.position.set(0, 1.0, 0);
-      scene.add(amberLight);
+    /* ── Background ── */
+    c.fillStyle = '#1e2227';
+    c.fillRect(0, 0, W, H);
 
-      /* ── Shadow plane ── */
-      const shadowGeo  = new THREE.PlaneGeometry(8, 8);
-      const shadowMat  = new THREE.ShadowMaterial({ opacity: 0.18 });
-      const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
-      shadowPlane.rotation.x = -Math.PI / 2;
-      shadowPlane.position.y = -0.041;
-      shadowPlane.receiveShadow = true;
-      scene.add(shadowPlane);
+    /* ── iOS status bar ── */
+    /* Notch placeholder */
+    c.fillStyle = '#000000';
+    const notchW = 100, notchH = 26;
+    const notchR = 10;
+    const nx = (W - notchW) / 2, ny = 0;
+    c.beginPath();
+    c.moveTo(nx, ny);
+    c.lineTo(nx + notchW, ny);
+    c.lineTo(nx + notchW, ny + notchH - notchR);
+    c.quadraticCurveTo(nx + notchW, ny + notchH, nx + notchW - notchR, ny + notchH);
+    c.lineTo(nx + notchR, ny + notchH);
+    c.quadraticCurveTo(nx, ny + notchH, nx, ny + notchH - notchR);
+    c.closePath();
+    c.fill();
 
-      /* ── Procedural iPhones ── */
-      const phoneMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness: 0.5, metalness: 0.8 });
-      const phoneGeo = new THREE.BoxGeometry(0.55, 1.1, 0.06);
+    /* Clock */
+    c.fillStyle = '#ffffff';
+    c.font = 'bold 15px -apple-system, sans-serif';
+    c.textAlign = 'left';
+    c.fillText('12:00', 18, 23);
 
-      const phoneLeft = new THREE.Mesh(phoneGeo, phoneMat);
-      phoneLeft.position.set(-2.0, 0.3, 0.6);
-      phoneLeft.visible = false;
-      scene.add(phoneLeft);
-      window._phoneLeft = phoneLeft;
+    /* Battery icon (pill) */
+    c.fillStyle = '#ffffff';
+    c.strokeStyle = '#ffffff';
+    c.lineWidth = 1.2;
+    const bx = 248, by = 10, bw = 26, bh = 13, br = 3;
+    /* Outline */
+    c.beginPath();
+    c.moveTo(bx + br, by);
+    c.lineTo(bx + bw - br, by);
+    c.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
+    c.lineTo(bx + bw, by + bh - br);
+    c.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
+    c.lineTo(bx + br, by + bh);
+    c.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
+    c.lineTo(bx, by + br);
+    c.quadraticCurveTo(bx, by, bx + br, by);
+    c.closePath();
+    c.stroke();
+    /* Fill inside */
+    c.fillRect(bx + 3, by + 3, bw - 6, bh - 6);
+    /* Battery nub */
+    c.fillRect(bx + bw + 1, by + 3, 2.5, bh - 6);
 
-      const phoneRight = new THREE.Mesh(phoneGeo, phoneMat);
-      phoneRight.position.set(2.0, 0.3, 0.6);
-      phoneRight.visible = false;
-      scene.add(phoneRight);
-      window._phoneRight = phoneRight;
+    /* Signal bars */
+    c.fillStyle = '#ffffff';
+    for (let i = 0; i < 4; i++) {
+      const barH = 4 + i * 3;
+      c.fillRect(230 + i * 5, 10 + (13 - barH), 3, barH);
+    }
 
-      /* ── Dashed lines laptop → phones ── */
-      const lineMat = new THREE.LineDashedMaterial({ color: 0xD4923A, dashSize: 0.15, gapSize: 0.1, transparent: true, opacity: 0 });
+    /* ── Terminal lines ── */
+    c.font = '13px "SF Mono", "Menlo", monospace';
+    c.textAlign = 'left';
+    let y = 70;
+    const lineH = 22;
 
-      const leftLinePts = [new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(-2.0, 0.3, 0.6)];
-      const leftLineGeo = new THREE.BufferGeometry().setFromPoints(leftLinePts);
-      const leftLine = new THREE.Line(leftLineGeo, lineMat.clone());
-      leftLine.computeLineDistances();
-      leftLine.visible = false;
-      scene.add(leftLine);
+    for (const line of this.lines) {
+      c.fillStyle = this._colorForLine(line);
+      c.fillText(line, 16, y, W - 32);
+      y += lineH;
+    }
 
-      const rightLinePts = [new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(2.0, 0.3, 0.6)];
-      const rightLineGeo = new THREE.BufferGeometry().setFromPoints(rightLinePts);
-      const rightLine = new THREE.Line(rightLineGeo, lineMat.clone());
-      rightLine.computeLineDistances();
-      rightLine.visible = false;
-      scene.add(rightLine);
-
-      /* ── Load GLB ── */
-      const loader = new THREE.GLTFLoader();
-      let laptopModel = null;
-      window._laptopLid = null;
-
-      loader.load('assets/macbook.glb', function(gltf) {
-        laptopModel = gltf.scene;
-        laptopModel.traverse(function(child) {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
-
-        /* Auto-fit: compute bounding box, scale + center the model */
-        const box = new THREE.Box3().setFromObject(laptopModel);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const desiredSize = 3.0; /* target width roughly */
-        const scaleFactor = desiredSize / maxDim;
-        laptopModel.scale.setScalar(scaleFactor);
-        /* Recalc after scale */
-        box.setFromObject(laptopModel);
-        box.getCenter(center);
-        laptopModel.position.sub(center);
-        laptopModel.position.y += size.y * scaleFactor * 0.5; /* sit on ground */
-
-        scene.add(laptopModel);
-
-        /* Find lid mesh — try known names, then fall back to the upper-half group */
-        const lidNames = ['Lid', 'lid', 'Screen', 'Top', 'screen', 'top', 'Display', 'display'];
-        for (let i = 0; i < lidNames.length; i++) {
-          const found = laptopModel.getObjectByName(lidNames[i]);
-          if (found) { window._laptopLid = found; break; }
+    /* Currently typing line with blinking cursor */
+    if (this.typingIndex < this.script.length) {
+      const activeLine = this.script[this.typingIndex];
+      if (activeLine.typeSpeed > 0 && this.currentLineChars > 0) {
+        const partial = activeLine.text.substring(0, this.currentLineChars);
+        c.fillStyle = '#ffffff';
+        c.fillText(partial, 16, y, W - 32);
+        /* Blinking block cursor */
+        if (this.cursorVisible) {
+          const tw = c.measureText(partial).width;
+          c.fillStyle = '#D4923A';
+          c.fillRect(16 + tw + 1, y - 12, 8, 15);
         }
-        /* Fallback: use the top-level node that contains the upper half of geometry */
-        if (!window._laptopLid) {
-          console.log('[Coffeetosh] No named lid mesh found, using whole model (lid anim disabled)');
-        }
+      }
+    } else if (this.started) {
+      /* All lines done — show idle blinking cursor on new prompt */
+      if (this.cursorVisible) {
+        const prompt = this.side === 'L' ? 'admin@my-mac:~ $ ' : 'guest@iphone:~ $ ';
+        c.fillStyle = '#61afef';
+        c.fillText(prompt, 16, y, W - 32);
+        const tw = c.measureText(prompt).width;
+        c.fillStyle = '#D4923A';
+        c.fillRect(16 + tw + 1, y - 12, 8, 15);
+      }
+    }
 
-        window._laptopLoaded = true;
+    /* Subtle scanline overlay for texture depth */
+    c.fillStyle = 'rgba(0,0,0,0.04)';
+    for (let sy = 0; sy < H; sy += 3) {
+      c.fillRect(0, sy, W, 1);
+    }
 
-        /* If ready callback was queued by laptopAnimation, fire it */
-        if (window._laptop3DReady) {
-          window._laptop3DReady();
-          window._laptop3DReady = null;
+    this.texture.needsUpdate = true;
+  }
+}
+
+  function createPhone(px, py, pz, rotY, rotX, rotZ, terminalObj) {
+    const grp = new THREE.Group();
+    const pw = 0.38, ph = 0.82, pd = 0.04;
+    const body = new THREE.Mesh(
+      makeRoundedBoxGeo(pw, ph, pd, 0.045),
+      new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 })
+    );
+    body.castShadow = true;
+    grp.add(body);
+
+    const scrMat = new THREE.MeshBasicMaterial({ map: terminalObj.texture, side: THREE.DoubleSide });
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(pw - 0.04, ph - 0.04), scrMat);
+    /* Body bevel pushes front face to ~pd/2 + bevelThickness. Place screen just in front. */
+    const bevelT = Math.min(0.045 * 0.3, pd * 0.3);
+    scr.position.z = pd / 2 + bevelT + 0.002;
+    grp.add(scr);
+
+    grp.position.set(px, py, pz);
+    grp.rotation.set(rotX, rotY, rotZ);
+    grp.scale.set(0, 0, 0); 
+    return grp;
+  }
+
+  const PHONE_VISIBLE_SCALE = isMobile ? 0.40 : 0.65;
+  const termL = new AnimatedTerminal('L');
+  const termR = new AnimatedTerminal('R');
+  // Desktop: phones wider flanking laptop. Mobile: tighter, higher, stacked look.
+  const phoneXOff = isMobile ? 0.55 : 1.25;
+  const phoneYL  = isMobile ? 0.45 : 0.10;
+  const phoneYR  = isMobile ? 0.35 : 0.00;
+  const phoneL = createPhone(-phoneXOff, phoneYL, 0.35,  0.25, -0.06, -0.06, termL);
+  const phoneR = createPhone( phoneXOff, phoneYR, 0.40, -0.25, -0.06,  0.06, termR);
+  masterGroup.add(phoneL, phoneR);
+
+  /* ── 3D curved dashed lines with draw-on animation (phone → Mac) ── */
+  const LINE_SEGMENTS = 120; // more segments = smoother draw-on
+  function makeDash(from, to, control1, control2) {
+    const curve = new THREE.CubicBezierCurve3(from, control1, control2, to);
+    const points = curve.getPoints(LINE_SEGMENTS);
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineDashedMaterial({
+      color: 0xD4923A, dashSize: 0.06, gapSize: 0.03,
+      transparent: true, opacity: 0, linewidth: 2
+    });
+    const line = new THREE.Line(geo, mat);
+    line.computeLineDistances();
+    /* Start with nothing drawn — we'll animate drawRange.count */
+    geo.setDrawRange(0, 0);
+    return line;
+  }
+
+  /* Lines are created after GLB loads so we know the real base position. */
+  let lineL = null;
+  let lineR = null;
+
+  /* ── 3D click indicator — subtle accent ring + dot above closed Mac ── */
+  const clickIndicator = new THREE.Group();
+  (function() {
+    /* Outer ring */
+    var ringGeo = new THREE.RingGeometry(0.06, 0.075, 32);
+    var ringMat = new THREE.MeshBasicMaterial({
+      color: 0xD4923A, transparent: true, opacity: 0, side: THREE.DoubleSide
+    });
+    var ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2; /* lay flat */
+    clickIndicator.add(ring);
+    /* Center dot */
+    var dotGeo = new THREE.CircleGeometry(0.025, 24);
+    var dotMat = new THREE.MeshBasicMaterial({
+      color: 0xD4923A, transparent: true, opacity: 0, side: THREE.DoubleSide
+    });
+    var dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.rotation.x = -Math.PI / 2;
+    clickIndicator.add(dot);
+    clickIndicator.position.set(0, 0.15, 0); /* above Mac center, adjusted after load */
+    clickIndicator.visible = false;
+  })();
+  masterGroup.add(clickIndicator);
+
+  /* ── Load GLB ── */
+  let lidPivot = null;         /* pivot group AT the hinge — just rotate this */
+  let bodyNodeRef = null;
+  let lidNodeRef = null;
+  let modelLoaded = false;
+
+  let LID_OPEN_ANGLE = 0.0;
+  let LID_CLOSE_ANGLE = 2.0 - 0.052; // ~114° bent toward keyboard to shut, minus 3° hover gap
+  let LID_CLOSE_Y_OFFSET = 0; // Removed physical sink 
+  let LID_CLOSE_Z_OFFSET = 0.06; // Slide screen precisely forward so it closes perfectly flush!
+  let LID_PIVOT_Y0 = 0;
+  let LID_PIVOT_Z0 = 0;
+
+  let lidProgress = 0; /* 0=open, 1=closed */
+  let lidIsClosed = false;
+  let lidIsAnimating = false;
+  let lidAnimFrom = 0;
+  let lidAnimTo = 0;
+  let lidAnimStartMs = 0;
+  const LID_TOGGLE_DUR_MS = 1400;
+
+  /* ── Hero state machine: LOADING→INTRO→PLAYING→CLOSING→CLOSED→OPENING→PLAYING… ── */
+  let heroState = 'LOADING';
+  let playStartTime = 0;
+  const PLAY_FALLBACK_SEC = 6; /* auto-close after 6s if no video */
+  let pendingReopen = false;
+
+  /* ── Intro fly-in animation ── */
+  const INTRO_DUR_MS = 1800;
+  let introStartMs = 0;
+  const INTRO_Y_OFFSET = -1.2;   /* start below */
+  const INTRO_ROT_Y = Math.PI * 0.15;  /* slight Y rotation at start */
+
+  function applyLidPose(progress) {
+    if (!lidPivot) return;
+    lidPivot.rotation.x = LID_OPEN_ANGLE + (LID_CLOSE_ANGLE - LID_OPEN_ANGLE) * progress;
+    lidPivot.position.y = LID_PIVOT_Y0 + (LID_CLOSE_Y_OFFSET * progress);
+    lidPivot.position.z = LID_PIVOT_Z0 + (LID_CLOSE_Z_OFFSET * progress);
+  }
+
+  function startAutoClose() {
+    if (heroState !== 'PLAYING') return;
+    heroState = 'CLOSING';
+    lidIsAnimating = true;
+    lidAnimFrom = 0;
+    lidAnimTo = 1;
+    lidAnimStartMs = performance.now();
+  }
+
+  function onCloseComplete() {
+    lidIsClosed = true;
+    if (videoReady) video.pause();
+    if (pendingReopen) {
+      pendingReopen = false;
+      heroState = 'CLOSED';
+      startReopen();
+      return;
+    }
+    heroState = 'CLOSED';
+    /* Show click indicator after a short delay */
+    setTimeout(function() {
+      if (heroState === 'CLOSED') clickIndicator.visible = true;
+    }, 800);
+  }
+
+  function startReopen() {
+    if (heroState === 'CLOSING') {
+      /* User clicked while lid is still closing — queue reopen */
+      pendingReopen = true;
+      return;
+    }
+    if (heroState !== 'CLOSED') return;
+    heroState = 'OPENING';
+    clickIndicator.visible = false;
+    /* Show first frame while lid opens */
+    if (videoReady) {
+      video.currentTime = 0;
+      video.pause();
+    }
+    lidIsAnimating = true;
+    lidAnimFrom = lidProgress;
+    lidAnimTo = 0;
+    lidAnimStartMs = performance.now();
+  }
+
+  function onOpenComplete() {
+    heroState = 'PLAYING';
+    lidIsClosed = false;
+    lidProgress = 0;
+    playStartTime = elapsed;
+    termL.reset();
+    termR.reset();
+    /* Video is already at frame 0 from startReopen — just play */
+    if (videoReady) {
+      video.playbackRate = 1.5;
+      video.play().catch(function(){});
+    }
+  }
+
+  const loader = new THREE.GLTFLoader();
+  loader.load('assets/macbook.glb', function(gltf) {
+    const model = gltf.scene;
+
+    /* Scale + center FIRST so all measurements below are in final world units. */
+    var box0 = new THREE.Box3().setFromObject(model);
+    var size0 = box0.getSize(new THREE.Vector3());
+    var sf = 1.75 / Math.max(size0.x, size0.y, size0.z);
+    model.scale.setScalar(sf);
+    var box1 = new THREE.Box3().setFromObject(model);
+    var ctr = box1.getCenter(new THREE.Vector3());
+    model.position.sub(ctr);
+    model.position.y -= 0.12;
+    model.updateMatrixWorld(true);
+
+    let lidNode = null, bodyNode = null;
+    model.traverse(function(obj) {
+      if (!lidNode  && obj.name && obj.name.indexOf('VCQqxpxkUlzqcJI') !== -1) lidNode  = obj;
+      if (!bodyNode && obj.name && obj.name.indexOf('BoBvWqDHZjAeVrp') !== -1) bodyNode = obj;
+    });
+    console.log('[GLB] lid:', lidNode && lidNode.name, 'body:', bodyNode && bodyNode.name);
+
+    if (lidNode && bodyNode) {
+      lidNodeRef = lidNode;
+      bodyNodeRef = bodyNode;
+      model.updateMatrixWorld(true);
+
+      /* Use world boxes and convert hinge back to model-local, no identity assumptions. */
+      const lidBox  = new THREE.Box3().setFromObject(lidNode);
+      const bodyBox = new THREE.Box3().setFromObject(bodyNode);
+      console.log('[GLB] lid  min', lidBox.min.toArray(),  'max', lidBox.max.toArray());
+      console.log('[GLB] body min', bodyBox.min.toArray(), 'max', bodyBox.max.toArray());
+
+      /* ── Create dashed lines now that we know real base geometry ── */
+      var bLeft   = bodyBox.min.x;          // left edge of base
+      var bRight  = bodyBox.max.x;          // right edge of base
+      var bTop    = bodyBox.max.y;           // top surface of base
+      var bMidZ   = (bodyBox.min.z + bodyBox.max.z) / 2; // mid-depth of base
+      console.log('[GLB] base sides L/R:', bLeft, bRight, 'top:', bTop, 'midZ:', bMidZ);
+
+      var lineDip  = isMobile ? -0.45 : -0.9;     // less dramatic dip on mobile
+      var lineArcX = isMobile ? 0.25 : 0.5;          // tighter horizontal arc on mobile
+      var lineArcY = isMobile ? -0.3 : -0.6;          // shallower vertical arc on mobile
+      var lineZPull = isMobile ? 0.3 : 0.6;           // less z-pull on mobile
+
+      lineL = makeDash(
+        new THREE.Vector3(-phoneXOff, phoneYL - 0.41, 0.35),        // start: bottom of left phone
+        new THREE.Vector3(bLeft, bTop + 0.01, bMidZ),               // end: left edge of Mac base
+        new THREE.Vector3(-phoneXOff - 0.05, lineDip, bMidZ - lineZPull),   // ctrl1
+        new THREE.Vector3(bLeft - lineArcX, bTop + lineArcY, bMidZ - lineZPull * 0.4) // ctrl2
+      );
+      lineR = makeDash(
+        new THREE.Vector3(phoneXOff, phoneYR - 0.41, 0.40),         // start: bottom of right phone
+        new THREE.Vector3(bRight, bTop + 0.01, bMidZ),              // end: right edge of Mac base
+        new THREE.Vector3(phoneXOff + 0.05, lineDip, bMidZ - lineZPull),    // ctrl1
+        new THREE.Vector3(bRight + lineArcX, bTop + lineArcY, bMidZ - lineZPull * 0.4) // ctrl2
+      );
+      masterGroup.add(lineL, lineR);
+
+      /* Hinge: the physical hinge is at the TOP-BACK edge of the BODY (keyboard deck).
+         The model starts OPEN, so we must NOT use entireModelBox (which includes
+         the screen extending backward). Use bodyBox for accurate hinge placement. */
+      const hingeWorld = new THREE.Vector3(
+        (bodyBox.min.x + bodyBox.max.x) / 2,  // center-X of body
+        bodyBox.max.y,                          // top surface of keyboard deck
+        bodyBox.min.z                           // back edge of body (actual hinge axis)
+      );
+      console.log('[GLB] hinge(world)', hingeWorld.toArray());
+
+      /* Pivot-group with world-transform preservation. */
+      lidPivot = new THREE.Group();
+      lidPivot.position.copy(model.worldToLocal(hingeWorld.clone()));
+      LID_PIVOT_Y0 = lidPivot.position.y;
+      LID_PIVOT_Z0 = lidPivot.position.z;
+      model.add(lidPivot);
+      model.updateMatrixWorld(true);
+      lidPivot.attach(lidNode);
+      model.updateMatrixWorld(true);
+      console.log('[GLB] pivot(local)', lidPivot.position.toArray());
+
+      /* The model is actually modeled completely OPEN.
+         Therefore, its initial rotation (0) is visually open (lid up). */
+      LID_CLOSE_Y_OFFSET = 0;
+      lidPivot.position.y = LID_PIVOT_Y0;
+      lidPivot.position.z = LID_PIVOT_Z0;
+
+      /* Model natively starts visually OPEN (0 rad = lid up).
+         OPEN  = 0.0  (stay where you are: visually open)
+         CLOSE = +2.0 rad (~114°) bent toward the keyboard to shut,
+                 minus 0.052 rad (~3°) so it hovers and doesn't clip the base. */
+      LID_OPEN_ANGLE = 0.0;
+      LID_CLOSE_ANGLE = 2.0 - 0.052;
+      LID_CLOSE_Z_OFFSET = 0.06;
+
+      console.log('[GLB] Model starts loaded OPEN. Open Angle:', LID_OPEN_ANGLE, 'Close Angle:', LID_CLOSE_ANGLE);
+
+      /* Reset to open pose — animation starts from here. */
+      lidPivot.rotation.x = LID_OPEN_ANGLE;
+      lidPivot.position.y = LID_PIVOT_Y0;
+      console.log('[GLB] openAngle', LID_OPEN_ANGLE.toFixed(3), 'closeAngle', LID_CLOSE_ANGLE.toFixed(4));
+
+      /* ── Apply video to screen mesh: Object_183 (mat: sfCQkHOWyrsLmor, index 12) ── */
+      var screenMesh = null;
+      lidNode.traverse(function(child) {
+        if (child.isMesh && child.material && child.material.name === 'sfCQkHOWyrsLmor') {
+          screenMesh = child;
         }
-      }, undefined, function(err) {
-        console.error('[Coffeetosh] GLB load error:', err);
       });
+      console.log('[GLB] screen mesh found:', screenMesh ? screenMesh.name : 'NONE');
 
-      /* ── Animate loop ── */
-      let raf;
-      function render() {
-        raf = requestAnimationFrame(render);
-        const t = performance.now() * 0.001;
-        /* Idle float — whole scene bobs */
-        scene.position.y = Math.sin(t * 0.7) * 0.02;
-        renderer.render(scene, camera);
+      function applyVideoToScreen() {
+        if (!ENABLE_SCREEN_VIDEO || !screenMesh) return;
+        var vTex = new THREE.VideoTexture(video);
+        vTex.encoding = THREE.sRGBEncoding;
+        screenMesh.material = new THREE.MeshBasicMaterial({ map: vTex, toneMapped: false });
+        /* Don't auto-play here — let the state machine start playback */
+        video.currentTime = 0;
+        console.log('[GLB] video applied to', screenMesh.name);
       }
-      render();
 
-      /* ── Exposed API ── */
-      window._laptop3D = {
-        setLidProgress(p) {
-          /* p=0 → lid 90° open (PI/2), p=1 → lid fully closed (0) */
-          const open = Math.PI / 2;
-          const closed = 0;
-          if (window._laptopLid) {
-            window._laptopLid.rotation.x = THREE.MathUtils.lerp(open, closed, p);
-          }
-          /* Amber light fades from 1.5 at p=0 to 0 at p=1 */
-          amberLight.intensity = THREE.MathUtils.lerp(1.5, 0, p);
-        },
-        showPhones() {
-          phoneLeft.visible = true;
-          phoneRight.visible = true;
-          leftLine.visible = true;
-          rightLine.visible = true;
-        },
-        getLines() { return { leftLine, rightLine }; },
-        dispose() { cancelAnimationFrame(raf); renderer.dispose(); }
-      };
+      if (ENABLE_SCREEN_VIDEO) {
+        /* Video may already be ready if cached — check readyState */
+        if (video.readyState >= 3) {
+          videoReady = true;
+          applyVideoToScreen();
+        } else {
+          video.addEventListener('canplay', function() {
+            videoReady = true;
+            applyVideoToScreen();
+          }, { once: true });
+        }
+      }
 
-      /* Cleanup on page unload */
-      window.addEventListener('beforeunload', () => window._laptop3D && window._laptop3D.dispose());
-    })();
+      applyLidPose(0);
 
-    /* ─── Three.js Steam Particles ─── */
+      /* Position click indicator above the closed Mac surface, forward of logo */
+      var indicZ = bodyBox.max.z + 0.15;
+      clickIndicator.position.set(0, bodyBox.max.y + 0.08, indicZ);
+      console.log('[GLB] indicator pos:', 0, bodyBox.max.y + 0.08, indicZ, 'bodyBox.max.z:', bodyBox.max.z);
+
+      /* Auto-close is started in the render loop once model is definitely ready in scene. */
+    }
+
+    masterGroup.add(model);
+    modelLoaded = true;
+    /* Hide model initially for intro */
+    masterGroup.position.y = INTRO_Y_OFFSET;
+    masterGroup.rotation.y = INTRO_ROT_Y;
+    console.log('[GLB] loaded. scale:', sf);
+
+  }, undefined, function(err) {
+    console.error('[GLB] load error', err);
+    modelLoaded = true;
+  });
+
+  /* Click to toggle lid open/closed */
+  canvas.addEventListener('pointerdown', function() {
+    if (!lidPivot || !modelLoaded || lidIsAnimating) return;
+    if (heroState === 'CLOSED') {
+      startReopen();
+    } else if (heroState === 'PLAYING') {
+      startAutoClose();
+    }
+  });
+  canvas.style.cursor = 'pointer';
+
+  /* ── Animation ── */
+  const clock = new THREE.Clock();
+  let elapsed = 0;
+  const FLOAT_START  = 4.0;
+
+  function ease(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    var dt = clock.getDelta();
+    elapsed += dt;
+
+    /* ── Lid toggle animation (open <-> closed) ── */
+    if (lidPivot) {
+      /* State: start intro fly-in once model loaded */
+      if (heroState === 'LOADING' && modelLoaded) {
+        heroState = 'INTRO';
+        introStartMs = performance.now();
+      }
+
+      /* Intro fly-in animation */
+      if (heroState === 'INTRO') {
+        var it = Math.min((performance.now() - introStartMs) / INTRO_DUR_MS, 1);
+        var ie = it < 0.5 ? 4 * it * it * it : 1 - Math.pow(-2 * it + 2, 3) / 2;
+        masterGroup.position.y = INTRO_Y_OFFSET * (1 - ie);
+        masterGroup.rotation.y = INTRO_ROT_Y * (1 - ie);
+        if (it >= 1) {
+          masterGroup.position.y = 0;
+          masterGroup.rotation.y = 0;
+          heroState = 'PLAYING';
+          playStartTime = elapsed;
+          if (videoReady) { video.currentTime = 0; video.playbackRate = 1.5; video.play().catch(function(){}); }
+        }
+      }
+      /* Fallback: auto-close after timer if no video */
+      if (heroState === 'PLAYING' && !videoReady && elapsed - playStartTime > PLAY_FALLBACK_SEC) {
+        startAutoClose();
+      }
+
+      if (lidIsAnimating) {
+        var t = Math.min((performance.now() - lidAnimStartMs) / LID_TOGGLE_DUR_MS, 1);
+        var e = ease(t);
+        lidProgress = lidAnimFrom + (lidAnimTo - lidAnimFrom) * e;
+        if (t >= 1) {
+          lidProgress = lidAnimTo;
+          lidIsAnimating = false;
+          if (lidAnimTo === 1) onCloseComplete();
+          else if (lidAnimTo === 0) onOpenComplete();
+        }
+      }
+
+      applyLidPose(lidProgress);
+    }
+
+    /* Phones and lines: sequence after laptop nears closed.
+       Each phone + its line animate together, left first then right. */
+    var seq = THREE.MathUtils.clamp((lidProgress - 0.80) / 0.20, 0, 1);
+    /* Left phone + line together in first half, right phone + line in second half */
+    var leftP  = ease(THREE.MathUtils.clamp(seq / 0.5, 0, 1));
+    var rightP = ease(THREE.MathUtils.clamp((seq - 0.5) / 0.5, 0, 1));
+
+    phoneL.scale.set(leftP * PHONE_VISIBLE_SCALE, leftP * PHONE_VISIBLE_SCALE, leftP * PHONE_VISIBLE_SCALE);
+    phoneR.scale.set(rightP * PHONE_VISIBLE_SCALE, rightP * PHONE_VISIBLE_SCALE, rightP * PHONE_VISIBLE_SCALE);
+
+    /* Draw-on animation: line progressively draws from phone → Mac */
+    if (lineL) {
+      lineL.material.opacity = leftP > 0.01 ? 0.9 : 0;
+      var drawCountL = Math.floor(leftP * (LINE_SEGMENTS + 1));
+      lineL.geometry.setDrawRange(0, drawCountL);
+    }
+    if (lineR) {
+      lineR.material.opacity = rightP > 0.01 ? 0.9 : 0;
+      var drawCountR = Math.floor(rightP * (LINE_SEGMENTS + 1));
+      lineR.geometry.setDrawRange(0, drawCountR);
+    }
+    document.getElementById('glow-ring').style.opacity = rightP > 0.01 ? '0.8' : '0';
+
+    if (leftP > 0.3 && !termL.started) termL.start();
+    if (rightP > 0.3 && !termR.started) termR.start();
+    
+    termL.update(dt);
+    termR.update(dt);
+
+    /* Flowing dashes along the drawn portion */
+    if (lineL) lineL.material.dashOffset -= dt * 2.0;
+    if (lineR) lineR.material.dashOffset -= dt * 2.0;
+
+    /* Click indicator pulse */
+    if (clickIndicator.visible) {
+      var pulse = 0.5 + 0.5 * Math.sin(elapsed * 3.0);
+      var ringChild = clickIndicator.children[0];
+      var dotChild  = clickIndicator.children[1];
+      ringChild.material.opacity = 0.25 + pulse * 0.35;
+      dotChild.material.opacity  = 0.4 + pulse * 0.4;
+      var sc = 1.0 + pulse * 0.15;
+      ringChild.scale.set(sc, sc, sc);
+    }
+
+    /* Idle float — only after intro is done */
+    if (heroState !== 'INTRO' && heroState !== 'LOADING' && elapsed >= FLOAT_START) {
+      masterGroup.position.y = Math.sin((elapsed - FLOAT_START) * 1.2) * 0.005;
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  /* ── Resize ── */
+  window.addEventListener('resize', function() {
+    var w = container.clientWidth, h = container.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+})();
+
+    /* --- Three.js Steam Particles ─── */
     (function initSteam() {
       const canvas = document.getElementById('steam-canvas');
       if (!canvas || typeof THREE === 'undefined') return;
@@ -2012,55 +2568,15 @@
         ease: 'back.out(1.2)', stagger: 0.07
       }, '-=0.1');
       tl.to('.hero-sub',       { opacity: 1, duration: 0.5, ease: 'power2.out' }, '-=0.1');
-      tl.to('#hero-illus',     { opacity: 1, duration: 0.4 }, '-=0.1');
-      tl.add(laptopAnimation(), '-=0.1');
-      tl.to('#hero-cta-wrap',  { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(1.4)' }, '-=0.2');
+      tl.to('#hero-cta-wrap',  { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(1.4)' }, '+=0.3');
 
       // Initial states
       gsap.set('.nav', { y: -60, opacity: 0 });
       gsap.set('#live-badge', { y: 10 });
       gsap.set('.hero-headline .word', { opacity: 0, y: 40 });
       gsap.set('.hero-sub', { opacity: 0 });
-      gsap.set('#hero-illus', { opacity: 0 });
-      gsap.set('#hero-cta-wrap', { y: 20 });
+      gsap.set('#hero-cta-wrap', { y: 20, opacity: 0 });
     })();
-
-    function laptopAnimation() {
-      const tl = gsap.timeline();
-      const proxy = { p: 0 };
-      gsap.set(['#phone-left', '#phone-right'], { opacity: 0 });
-
-      function runAnim() {
-        /* Tween lid from open (p=0) to closed (p=1) over 1.4s */
-        tl.to(proxy, {
-          p: 1, duration: 1.4, ease: 'power2.inOut',
-          onUpdate: () => { if (window._laptop3D) window._laptop3D.setLidProgress(proxy.p); },
-          onComplete: () => {
-            /* Show 3D phones + lines */
-            if (window._laptop3D) {
-              window._laptop3D.showPhones();
-              const lines = window._laptop3D.getLines();
-              /* Fade line opacity 0 → 1 */
-              gsap.to(lines.leftLine.material, { opacity: 1, duration: 0.5, ease: 'power2.out' });
-              gsap.to(lines.rightLine.material, { opacity: 1, duration: 0.5, ease: 'power2.out' });
-            }
-            /* Fade in HTML phone elements */
-            gsap.to(['#phone-left', '#phone-right'], { opacity: 1, duration: 0.5, stagger: 0.15, ease: 'power2.out' });
-            /* Animate SVG c-line strokeDashoffset */
-            gsap.to('.c-line', { strokeDashoffset: 0, duration: 0.8, stagger: 0.15, ease: 'power2.inOut' });
-          }
-        }, 0);
-      }
-
-      /* If GLB hasn't loaded yet, defer; otherwise run immediately */
-      if (window._laptopLoaded) {
-        runAnim();
-      } else {
-        window._laptop3DReady = runAnim;
-      }
-
-      return tl;
-    }
 
     /* ─── CTA Button Hover ─── */
     (function ctaHover() {
@@ -2070,148 +2586,344 @@
       btn.addEventListener('mouseleave', () => gsap.to(btn, { scale: 1.0,  duration: 0.18, ease: 'power2.out' }));
     })();
 
-    /* ─── Features Scenes — scroll-driven scrub, no auto-play ─── */
+    /* ─── Playful Download Button (first-visit easter egg) ─── */
+    (function playfulBtn() {
+      var btn = document.getElementById('hero-btn');
+      if (!btn) return;
+      var btnSpan = btn.querySelector('#hero-btn-text') || btn.querySelector('span');
+      if (!btnSpan) return;
+      var origText = btnSpan.textContent;
+      var isFirstVisit = !sessionStorage.getItem('ct_btn_seen');
+      var evadeCount = 0;
+      var MAX_EVADES = 4;
+      var isEvading = false;
+      var resetTimer = null;
+      var funnyTexts = ['Learn First \uD83D\uDE0F', 'Not so fast!', 'Read the docs \uD83D\uDC40', 'Catch me!'];
+      if (!isFirstVisit) return;
+      btn.addEventListener('click', function(e) {
+        if (isFirstVisit && evadeCount < MAX_EVADES) e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!isFirstVisit || evadeCount >= MAX_EVADES) return;
+        var rect = btn.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        if (dist < 60 && !isEvading) {
+          isEvading = true;
+          if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+          evadeCount++;
+          var dx = e.clientX - cx;
+          var moveX = dx > 0 ? -160 : 160;
+          var moveY = (Math.random() - 0.5) * 50;
+          btn.style.transform = 'translate(' + moveX + 'px,' + moveY + 'px)';
+          btnSpan.textContent = funnyTexts[(evadeCount - 1) % funnyTexts.length];
+        } else if (dist > 200 && isEvading) {
+          isEvading = false;
+          resetTimer = setTimeout(function() {
+            btn.style.transform = 'translate(0,0)';
+            if (evadeCount >= MAX_EVADES) {
+              btnSpan.textContent = origText;
+              isFirstVisit = false;
+              sessionStorage.setItem('ct_btn_seen', '1');
+            } else {
+              btnSpan.textContent = origText;
+            }
+          }, 400);
+        }
+      });
+    })();
+
+    const featureVideo = document.querySelector('.feature-video');
+    const terminalBody = document.getElementById('terminal-body');
+    let terminalTimeout = null;
+    let terminalTween = null;
+    let dashboardTweens = [];
+
+    function smoothScrollTo(targetY, duration = 1.1) {
+      const proxy = { value: window.scrollY };
+      return gsap.to(proxy, {
+        value: Math.max(0, targetY),
+        duration,
+        ease: 'power3.inOut',
+        overwrite: 'auto',
+        onUpdate: () => { document.documentElement.scrollTop = proxy.value; }
+      });
+    }
+
+    function smoothScrollToElement(element, offset = 24, duration = 1.1) {
+      if (!element) return;
+      const targetY = element.getBoundingClientRect().top + window.scrollY - offset;
+      smoothScrollTo(targetY, duration);
+    }
+
+    (function premiumScrollLinks() {
+      document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const href = link.getAttribute('href');
+          if (!href || href === '#') return;
+          const target = document.querySelector(href);
+          if (!target) return;
+          event.preventDefault();
+          smoothScrollToElement(target, 24, 1.18);
+        });
+      });
+      try {
+        ScrollTrigger.normalizeScroll({
+          allowNestedScroll: true,
+          lockAxis: false,
+          momentum: (self) => Math.min(2.8, Math.abs(self.velocityY) / 1400)
+        });
+      } catch (_) {}
+    })();
+
+    function resetSceneVideo() {
+      if (!featureVideo) return;
+      featureVideo.pause();
+      try { featureVideo.currentTime = 0; } catch (_) {}
+    }
+
+    function playSceneVideo() {
+      if (!featureVideo) return;
+      resetSceneVideo();
+      featureVideo.play().catch(() => {});
+    }
+
+    function resetTerminal() {
+      if (!terminalBody) return;
+      if (terminalTimeout) {
+        clearTimeout(terminalTimeout);
+        terminalTimeout = null;
+      }
+      if (terminalTween) {
+        terminalTween.kill();
+        terminalTween = null;
+      }
+      terminalBody.innerHTML = '';
+    }
+
+    function setTerminalStatic() {
+      if (!terminalBody) return;
+      terminalBody.innerHTML = [
+        '<div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">coffeetosh install-cli</span></div>',
+        '<div class="t-line t-out">→ Installed to /usr/local/bin/coffeetosh</div>',
+        '<div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">coffeetosh status</span></div>',
+        '<div class="t-line t-out">● Active — Keep Awake, 1h 42m remaining</div>'
+      ].join('');
+    }
+
+    function resetDashboard() {
+      dashboardTweens.forEach((tween) => tween.kill());
+      dashboardTweens = [];
+      const hours = document.getElementById('stat-hours');
+      const sessions = document.getElementById('stat-sessions');
+      const keepAwake = document.getElementById('stat-ka');
+      const headless = document.getElementById('stat-headless');
+      if (hours) hours.textContent = '0.0';
+      if (sessions) sessions.textContent = '0';
+      if (keepAwake) keepAwake.textContent = '0%';
+      if (headless) headless.textContent = '0%';
+      gsap.set('.stat-card, .session-row', { opacity: 0, y: 18 });
+    }
+
+    function setDashboardStatic() {
+      const hours = document.getElementById('stat-hours');
+      const sessions = document.getElementById('stat-sessions');
+      const keepAwake = document.getElementById('stat-ka');
+      const headless = document.getElementById('stat-headless');
+      if (hours) hours.textContent = '312.0';
+      if (sessions) sessions.textContent = '47';
+      if (keepAwake) keepAwake.textContent = '32%';
+      if (headless) headless.textContent = '68%';
+      gsap.set('.stat-card, .session-row', { opacity: 1, y: 0 });
+    }
+
+    function handleSceneEnter(index) {
+      if (index === 1) playSceneVideo();
+      if (index === 2) initTerminal();
+      if (index === 3) initDashboard();
+    }
+
+    function handleSceneExit(index) {
+      if (index === 1) resetSceneVideo();
+      if (index === 2) resetTerminal();
+      if (index === 3) resetDashboard();
+    }
+
+    /* ─── Features Scenes — pinned GSAP flow ─── */
     (function featuresController() {
       const TOTAL  = 3;
-      const scenes = [null,
+      const SCENE_POINTS = [0.16, 0.5, 0.84];
+      const scenes = [
         document.getElementById('scene-1'),
         document.getElementById('scene-2'),
         document.getElementById('scene-3')
       ];
-      const dots = [null,
-        document.getElementById('dot-1'),
-        document.getElementById('dot-2'),
-        document.getElementById('dot-3')
-      ];
       const indFill  = document.getElementById('scroll-ind-fill');
       const indWrap  = document.getElementById('scroll-indicator');
-      const arrHint  = document.getElementById('scroll-arrow-hint');
+      const indStep  = document.getElementById('scroll-ind-step');
+      const mm = gsap.matchMedia();
 
-      let activeScene = 0; // 0 = none shown yet
+      let activeScene = 0;
+      let featureTrigger;
 
-      /* ─ show a scene without animation (instant, driven by scroll position) ─ */
+      function updateIndicator(progress, sceneIndex) {
+        if (indFill) indFill.style.height = (Math.max(progress, 0.06) * 100) + '%';
+        if (indStep) indStep.textContent = '0' + sceneIndex + ' / 03';
+      }
+
+      function sceneFromProgress(progress) {
+        if (progress < (1 / 3)) return 1;
+        if (progress < (2 / 3)) return 2;
+        return 3;
+      }
+
       function setScene(n) {
         if (n === activeScene) return;
         const prev = activeScene;
         activeScene = n;
-        if (prev > 0 && scenes[prev]) {
-          scenes[prev].classList.remove('active');
-          gsap.set(scenes[prev], { opacity: 0, x: 0 });
+        
+        gsap.killTweensOf(scenes);
+        let tl = gsap.timeline();
+        
+        // Hide straggler scenes
+        scenes.forEach((s, idx) => {
+          if (s && idx !== n - 1 && idx !== prev - 1) {
+            s.classList.remove('active');
+            gsap.set(s, { opacity: 0 });
+          }
+        });
+
+        if (prev > 0 && scenes[prev - 1]) {
+          handleSceneExit(prev);
+          tl.to(scenes[prev - 1], { 
+            y: -30, opacity: 0, 
+            duration: 0.35, 
+            ease: 'power2.in', 
+            onComplete: () => {
+              scenes[prev - 1].classList.remove('active');
+            }
+          });
         }
-        if (n > 0 && scenes[n]) {
-          scenes[n].classList.add('active');
-          gsap.fromTo(scenes[n],
-            { opacity: 0, x: n > prev ? 50 : -50 },
-            { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }
-          );
-          dots.forEach((d, i) => { if (d) d.classList.toggle('filled', i > 0 && i <= n); });
-          if (n === 1) initDockAnim();
-          if (n === 2) initTerminal();
-          if (n === 3) initDashboard();
+        
+        if (scenes[n - 1]) {
+          tl.call(() => {
+            scenes[n - 1].classList.add('active');
+            handleSceneEnter(n);
+          });
+          if (prev === 0 && n === 1) {
+            tl.fromTo(scenes[n - 1], { opacity: 0, y: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, '+=0.05');
+          } else {
+            tl.fromTo(scenes[n - 1], { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '+=0.05');
+          }
         }
       }
 
-      /* ─ ScrollTrigger scrub across the tall features section ─ */
-      ScrollTrigger.create({
-        trigger: '#features-section',
-        start: 'top top',
-        end: 'bottom bottom',
-        onUpdate: (self) => {
-          const p = self.progress; // 0 → 1
+      function createDesktopFlow() {
+        featureTrigger = ScrollTrigger.create({
+          trigger: '#features-pin',
+          start: 'top top',
+          end: '+=300%',
+          pin: true,
+          scrub: 0.5,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            updateIndicator(progress, sceneFromProgress(progress));
+            const next = sceneFromProgress(progress);
+            if (next !== activeScene) setScene(next);
+          },
+          onEnter: () => {
+            if (indWrap) indWrap.classList.add('visible');
+            if (activeScene === 0) setScene(1);
+          },
+          onEnterBack: () => {
+            if (indWrap) indWrap.classList.add('visible');
+            const progress = featureTrigger ? featureTrigger.progress : 0.5;
+            setScene(sceneFromProgress(progress));
+          },
+          onLeave: () => {
+            if (indWrap) indWrap.classList.remove('visible');
+          },
+          onLeaveBack: () => {
+            if (indWrap) indWrap.classList.remove('visible');
+            if (activeScene > 0) handleSceneExit(activeScene);
+            scenes.forEach(s => {
+              if (s) {
+                s.classList.remove('active');
+                gsap.set(s, {opacity: 0, y: 0});
+              }
+            });
+            activeScene = 0;
+            updateIndicator(0.06, 1);
+          },
+        });
+      }
 
-          /* Update scroll indicator fill */
-          if (indFill) indFill.style.height = (p * 100) + '%';
-
-          /* Map progress → scene 1/2/3 with equal thirds */
-          let n;
-          if      (p < 0.01)  n = 0;
-          else if (p < 0.34)  n = 1;
-          else if (p < 0.67)  n = 2;
-          else                n = 3;
-          setScene(n);
-        },
-        onEnter: () => {
-          if (indWrap) indWrap.classList.add('visible');
-          if (arrHint) arrHint.classList.add('visible');
-          setScene(1);
-        },
-        onLeave: () => {
-          if (indWrap) indWrap.classList.remove('visible');
-          if (arrHint) arrHint.classList.remove('visible');
-        },
-        onEnterBack: () => {
-          if (indWrap) indWrap.classList.add('visible');
-          if (arrHint) arrHint.classList.add('visible');
-        },
-        onLeaveBack: () => {
-          if (indWrap) indWrap.classList.remove('visible');
-          if (arrHint) arrHint.classList.remove('visible');
-          setScene(0);
-        },
+      mm.add('(min-width: 768px)', () => {
+          scenes.forEach((s, idx) => {
+              if(s) {
+                if (idx === 0) {
+                  s.classList.add('active');
+                  gsap.set(s, {opacity: 1, y: 0});
+                } else {
+                  s.classList.remove('active');
+                  gsap.set(s, {opacity: 0, y: 0});
+                }
+              }
+          });
+          activeScene = 1;
+          updateIndicator(0.06, 1);
+          createDesktopFlow();
+          return () => {
+            if (activeScene > 0) handleSceneExit(activeScene);
+            scenes.forEach(s => { if(s) { s.classList.remove('active'); gsap.set(s, {opacity: 0, y: 0}); } });
+            if (featureTrigger) featureTrigger.kill();
+          };
+        });
+      mm.add('(max-width: 767px)', () => {
+        activeScene = 1;
+        scenes.forEach(scene => scene.classList.add('active'));
+        resetSceneVideo();
+        setTerminalStatic();
+        setDashboardStatic();
+        if (indWrap) indWrap.classList.remove('visible');
       });
 
-      /* ─ "Next" buttons still work as shortcuts ─ */
       function scrollToScene(n) {
-        /* Each scene occupies 1/3 of the section's scrollable height + a little offset */
-        const section = document.getElementById('features-section');
-        if (!section) return;
-        const sectionTop    = section.offsetTop;
-        const sectionHeight = section.scrollHeight - window.innerHeight;
-        const target = sectionTop + sectionHeight * ((n - 1) / 3 + 0.02);
-        window.scrollTo({ top: target, behavior: 'smooth' });
+        if (window.innerWidth < 768 || !featureTrigger) {
+          const scene = scenes[n - 1];
+          if (scene) smoothScrollToElement(scene, 24, 0.95);
+          return;
+        }
+        // Ensure scene triggers correctly
+        const offset = 0.05;
+        const target = featureTrigger.start + ((featureTrigger.end - featureTrigger.start) * (SCENE_POINTS[n - 1] + offset));
+        smoothScrollTo(target, 0.9);
       }
 
-      function burst() {
-        confetti({ particleCount: 130, spread: 75, colors: ['#D4923A', '#F0E6D8', '#2A2019', '#fff'], origin: { y: 0.6 } });
+      function scrollPastFeatures() {
+        if (window.innerWidth < 768 || !featureTrigger) {
+          const section = document.getElementById('pricing-section');
+          if (section) smoothScrollToElement(section, 24, 1.08);
+          return;
+        }
+        // +200px guarantees we land past the pin release point
+        smoothScrollTo(featureTrigger.end + 200, 1.08);
       }
 
-      document.getElementById('btn-s1').addEventListener('click', () => { burst(); scrollToScene(2); });
-      document.getElementById('btn-s2').addEventListener('click', () => { burst(); scrollToScene(3); });
-      document.getElementById('btn-s3').addEventListener('click', () => {
-        burst();
-        const section = document.getElementById('features-section');
-        if (section) window.scrollTo({ top: section.offsetTop + section.scrollHeight, behavior: 'smooth' });
-      });
+      const btn1 = document.getElementById('btn-s1');
+      if (btn1) btn1.addEventListener('click', () => { fireConfetti(); scrollToScene(2); });
+      const btn2 = document.getElementById('btn-s2');
+      if (btn2) btn2.addEventListener('click', () => { fireConfetti(); scrollToScene(3); });
+      const btn3 = document.getElementById('btn-s3');
+      if (btn3) btn3.addEventListener('click', () => { fireConfetti(); scrollPastFeatures(); });
     })();
-
-    /* ─── Dock Animation ─── */
-    function initDockAnim() {
-      const cursor   = document.getElementById('dock-cursor');
-      const icon     = document.getElementById('dock-coffeetosh');
-      const outline  = document.getElementById('dock-cup-outline');
-      const filled   = document.getElementById('dock-cup-filled');
-      const tooltip  = document.getElementById('dock-tooltip');
-      const popover  = document.getElementById('popover-mockup');
-      const dockWrap = document.getElementById('dock-wrap');
-      if (!cursor || !icon) return;
-
-      const tl = gsap.timeline({ delay: 0.6 });
-      tl.to(cursor, { opacity: 1, duration: 0.3 });
-      tl.to(cursor, { x: -80, y: -5, duration: 0.8, ease: 'power2.inOut' });
-      // Bounce 1 — outline → filled
-      tl.to(icon,   { scaleY: 1.3, scaleX: 0.85, duration: 0.1 });
-      tl.to(icon,   { scaleY: 0.9, scaleX: 1.1, duration: 0.1 });
-      tl.to(icon,   { scaleY: 1, scaleX: 1, duration: 0.15, ease: 'elastic.out(1,0.5)' });
-      tl.to(outline, { opacity: 0, duration: 0.25 }, '-=0.15');
-      tl.to(filled,  { opacity: 1, duration: 0.25 }, '-=0.25');
-      // Cursor slight up → down for second click
-      tl.to(cursor, { y: 8, duration: 0.25, ease: 'power1.in' });
-      tl.to(cursor, { y: -5, duration: 0.15 });
-      tl.to(icon,   { scaleY: 1.25, scaleX: 0.88, duration: 0.1 });
-      tl.to(icon,   { scaleY: 1, scaleX: 1, duration: 0.18, ease: 'elastic.out(1,0.5)' });
-      // Tooltip
-      tl.to(tooltip, { opacity: 1, y: -4, duration: 0.3, ease: 'power2.out' });
-      tl.to(tooltip, { opacity: 0, duration: 0.25 }, '+=0.9');
-      // Zoom out the whole assembly + show popover
-      tl.to(dockWrap, { scale: 0.9, duration: 0.4, ease: 'power2.inOut' });
-      tl.add(() => { popover.classList.add('visible'); }, '-=0.1');
-    }
 
     /* ─── Terminal Animation ─── */
     function initTerminal() {
       const body = document.getElementById('terminal-body');
-      if (!body || body.dataset.init) return;
-      body.dataset.init = '1';
+      if (!body) return;
+      resetTerminal();
 
       const commands = [
         { cmd: 'coffeetosh install-cli',             out: '→ Installed to /usr/local/bin/coffeetosh' },
@@ -2233,35 +2945,49 @@
         line.innerHTML = '<span class="t-prompt">$ </span><span class="t-cmd" id="type-target-' + i + '"></span>';
         body.appendChild(line);
         body.scrollTop = body.scrollHeight;
-        gsap.to('#type-target-' + i, { duration: cmd.length * 0.038, text: cmd,
+        terminalTween = gsap.to('#type-target-' + i, { duration: cmd.length * 0.038, text: cmd,
           ease: 'none', onComplete: () => {
             const outLine = document.createElement('div');
             outLine.className = 't-line t-out';
             outLine.textContent = out;
             body.appendChild(outLine);
             body.scrollTop = body.scrollHeight;
-            setTimeout(typeNext, 380);
+            terminalTimeout = window.setTimeout(typeNext, 380);
           }
         });
       }
-      setTimeout(typeNext, 300);
+      terminalTimeout = window.setTimeout(typeNext, 180);
     }
 
     /* ─── Dashboard Animation ─── */
     function initDashboard() {
-      const done = document.getElementById('stat-sessions').dataset.done;
-      if (done) return;
-      document.getElementById('stat-sessions').dataset.done = '1';
+      resetDashboard();
 
-      const sSessions = { val: 0 };
-      const sHours    = { val: 0 };
-      const sHeadless = { val: 0 };
-      const sKa       = { val: 0 };
+      const metrics = [
+        { id: 'stat-sessions', target: 47, decimals: 0, suffix: '' },
+        { id: 'stat-hours', target: 312, decimals: 1, suffix: '' },
+        { id: 'stat-headless', target: 68, decimals: 0, suffix: '%' },
+        { id: 'stat-ka', target: 32, decimals: 0, suffix: '%' }
+      ];
 
-      gsap.to(sSessions, { val: 47,  duration: 1.4, ease: 'power2.out', onUpdate: () => { document.getElementById('stat-sessions').textContent = Math.round(sSessions.val); } });
-      gsap.to(sHours,    { val: 312, duration: 1.4, ease: 'power2.out', onUpdate: () => { document.getElementById('stat-hours').textContent    = Math.round(sHours.val * 10) / 10; } });
-      gsap.to(sHeadless, { val: 68,  duration: 1.4, ease: 'power2.out', onUpdate: () => { document.getElementById('stat-headless').textContent = Math.round(sHeadless.val) + '%'; } });
-      gsap.to(sKa,       { val: 32,  duration: 1.4, ease: 'power2.out', onUpdate: () => { const el = document.getElementById('stat-ka'); if (el) el.textContent = Math.round(sKa.val) + '%'; } });
+      metrics.forEach((metric, index) => {
+        const state = { value: 0 };
+        const element = document.getElementById(metric.id);
+        if (!element) return;
+        dashboardTweens.push(gsap.to(state, {
+          value: metric.target,
+          duration: 1.2 + (index * 0.08),
+          ease: 'power2.out',
+          onUpdate: () => {
+            element.textContent = state.value.toFixed(metric.decimals) + metric.suffix;
+          }
+        }));
+      });
+
+      dashboardTweens.push(gsap.fromTo('.stat-card, .session-row',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.08, ease: 'power2.out' }
+      ));
     }
 
     /* ─── Pricing Slot Machine ─── */
@@ -2269,7 +2995,7 @@
       const ticks  = [0, 9, 19, 29, 39, 50];
       const reel   = document.getElementById('price-reel');
       const freeD  = document.getElementById('free-display');
-      const slotH  = 80;
+      const slotH  = 112;
       let triggered = false;
 
       ScrollTrigger.create({

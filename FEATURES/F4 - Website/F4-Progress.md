@@ -1,6 +1,6 @@
 # ✅ F4-Progress: Website — Home Page (`index.html`)
 **Date:** 2026-03-05
-**Status:** ✅ Complete — `WEBSITE 2/index2.html`
+**Status:** ✅ Revision Complete — `WEBSITE 2/index2.html`
 **Scope:** `index.html` only. Other pages (`download.html`, `docs.html`) are separate prompts.
 
 ---
@@ -147,3 +147,74 @@
 - [x] No emoji in headings or body copy (badge dot is CSS-only)
 - [x] GSAP `matchMedia` — pinned section disabled on mobile
 - [x] Page opens in browser with `open index.html` — zero build steps required
+
+---
+
+## PHASE 10: Homepage Revision Pass
+
+- [x] Scene 1 visual replaced with embedded product video slot (no scripted animation)
+- [x] Features section converted to true GSAP pinned flow with reliable scene snapping and scroll lock
+- [x] Scroll indicator redesigned for clear visibility and progress feedback
+- [x] Scene shortcut buttons keep working without breaking scroll-triggered progression
+- [x] Scene 3 analytics visual upgraded with better counters and stronger presentation
+- [x] Hero and pricing "Download for Mac" buttons scroll to the on-page download section
+- [x] FAQ section added below download section in Coffeetosh style
+- [x] Footer wave rebuilt with coffee-colored fill and animated drip droplets on latte background
+- [x] Homepage JS revalidated after revision
+
+---
+
+## PHASE 11: Scroll Playback & Visual Revert
+
+- [x] Scene 1 video window stripped to a clean empty frame with no badge or caption
+- [x] Scene 1 video playback tied to scroll activation instead of autoplay
+- [x] Terminal animation starts from scene activation and resets when leaving scene
+- [x] Dashboard animation starts from scene activation and resets when leaving scene
+- [x] Dashboard visual styling restored to the original simpler design
+- [x] Footer coffee droplets rebuilt with more realistic shapes and motion
+- [x] Homepage JS revalidated after scroll-playback revision
+
+---
+
+## PHASE 12: Scroll Feel, Pricing, and Star Goal
+
+- [x] Scene 1 entry no longer fades in before playback begins
+- [x] Bottom middle scroll hint removed and right-side indicator simplified
+- [x] Feature navigation dots restored as clickable scene shortcuts
+- [x] Button-triggered scrolling upgraded to a smoother GSAP-style eased scroll
+- [x] Page scrolling tuned for smoother premium momentum
+- [x] Pricing card layout fixed on desktop so `/month` and `FREE` align cleanly
+- [x] Footer droplets upgraded again for more premium realism
+- [x] GitHub star display replaced with looping `200?` goal slot animation
+- [x] Homepage JS revalidated after scroll-feel and pricing revision
+
+---
+
+## PHASE 13: Star Counter Rebuild
+
+- [x] Cheap star counter ticker removed
+- [x] Star counter rebuilt as five-slot reel animation
+- [x] Counter composition updated with star icon and Coffeetosh logo
+- [x] Counter timing slowed so `00000` transitions to `0200?` and breathes before returning
+- [x] Homepage JS revalidated after star counter rebuild
+
+---
+
+## PHASE 14: Feature Section State Fix
+
+- [x] Feature section scene switching rebuilt to avoid overlap when scrolling up and down
+- [x] Scene previews appear immediately with no fade-in before GSAP state starts
+- [x] Right-side scroll indicator simplified and made more responsive
+- [x] Bottom-center scene dots removed entirely
+- [x] Scene shortcut buttons land in the exact centered view for each pinned scene
+- [x] Homepage JS revalidated after feature section state fix
+
+---
+
+## PHASE 15: GitHub Counter Restyle
+
+- [x] GitHub counter restyled to match the provided pill reference
+- [x] Counter updated to include repo icon and "Add to GitHub" text
+- [x] Coffeetosh logo removed from counter composition
+- [x] Counter digits restyled to match the website visual language
+- [x] Homepage JS revalidated after counter restyle

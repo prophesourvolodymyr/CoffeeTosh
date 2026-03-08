@@ -123,7 +123,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg-base);color:var(--text
     <span class="word">Addicting</span>&nbsp;<span class="word">your</span>&nbsp;<span class="word">mac</span>&nbsp;<span class="word">to</span>&nbsp;<span class="word">stay</span>&nbsp;<span class="word word-alive">alive</span>
   </h1>
 
-  <p class="hero-sub">The open-source sleep preventer for macOS. No root hacks. Free forever.</p>
+  <p class="hero-sub">Keep your Mac awake with one click. Menu bar app, scheduled sessions, open-source & free.</p>
 
   <div class="hero-illus" id="hero-illus">
     <div class="glow-ring" id="glow-ring"></div>
@@ -504,6 +504,30 @@ class AnimatedTerminal {
   let lineL = null;
   let lineR = null;
 
+  /* ── 3D click indicator — subtle accent ring + dot above closed Mac ── */
+  const clickIndicator = new THREE.Group();
+  (function() {
+    /* Outer ring */
+    var ringGeo = new THREE.RingGeometry(0.06, 0.075, 32);
+    var ringMat = new THREE.MeshBasicMaterial({
+      color: 0xD4923A, transparent: true, opacity: 0, side: THREE.DoubleSide
+    });
+    var ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2; /* lay flat */
+    clickIndicator.add(ring);
+    /* Center dot */
+    var dotGeo = new THREE.CircleGeometry(0.025, 24);
+    var dotMat = new THREE.MeshBasicMaterial({
+      color: 0xD4923A, transparent: true, opacity: 0, side: THREE.DoubleSide
+    });
+    var dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.rotation.x = -Math.PI / 2;
+    clickIndicator.add(dot);
+    clickIndicator.position.set(0, 0.15, 0); /* above Mac center, adjusted after load */
+    clickIndicator.visible = false;
+  })();
+  masterGroup.add(clickIndicator);
+
   /* ── Load GLB ── */
   let lidPivot = null;         /* pivot group AT the hinge — just rotate this */
   let bodyNodeRef = null;
@@ -525,11 +549,17 @@ class AnimatedTerminal {
   let lidAnimStartMs = 0;
   const LID_TOGGLE_DUR_MS = 1400;
 
-  /* ── Hero state machine: LOADING→PLAYING→CLOSING→CLOSED→OPENING→PLAYING… ── */
+  /* ── Hero state machine: LOADING→INTRO→PLAYING→CLOSING→CLOSED→OPENING→PLAYING… ── */
   let heroState = 'LOADING';
   let playStartTime = 0;
   const PLAY_FALLBACK_SEC = 6; /* auto-close after 6s if no video */
   let pendingReopen = false;
+
+  /* ── Intro fly-in animation ── */
+  const INTRO_DUR_MS = 1800;
+  let introStartMs = 0;
+  const INTRO_Y_OFFSET = -1.2;   /* start below */
+  const INTRO_ROT_Y = Math.PI * 0.15;  /* slight Y rotation at start */
 
   function applyLidPose(progress) {
     if (!lidPivot) return;
@@ -557,6 +587,10 @@ class AnimatedTerminal {
       return;
     }
     heroState = 'CLOSED';
+    /* Show click indicator after a short delay */
+    setTimeout(function() {
+      if (heroState === 'CLOSED') clickIndicator.visible = true;
+    }, 800);
   }
 
   function startReopen() {
@@ -567,6 +601,7 @@ class AnimatedTerminal {
     }
     if (heroState !== 'CLOSED') return;
     heroState = 'OPENING';
+    clickIndicator.visible = false;
     /* Show first frame while lid opens */
     if (videoReady) {
       video.currentTime = 0;
@@ -638,13 +673,13 @@ class AnimatedTerminal {
       var lineZPull = isMobile ? 0.3 : 0.6;           // less z-pull on mobile
 
       lineL = makeDash(
-        new THREE.Vector3(-phoneXOff, phoneYL - 0.45, 0.35),        // start: below left phone
+        new THREE.Vector3(-phoneXOff, phoneYL - 0.41, 0.35),        // start: bottom of left phone
         new THREE.Vector3(bLeft, bTop + 0.01, bMidZ),               // end: left edge of Mac base
         new THREE.Vector3(-phoneXOff - 0.05, lineDip, bMidZ - lineZPull),   // ctrl1
         new THREE.Vector3(bLeft - lineArcX, bTop + lineArcY, bMidZ - lineZPull * 0.4) // ctrl2
       );
       lineR = makeDash(
-        new THREE.Vector3(phoneXOff, phoneYR - 0.45, 0.40),         // start: below right phone
+        new THREE.Vector3(phoneXOff, phoneYR - 0.41, 0.40),         // start: bottom of right phone
         new THREE.Vector3(bRight, bTop + 0.01, bMidZ),              // end: right edge of Mac base
         new THREE.Vector3(phoneXOff + 0.05, lineDip, bMidZ - lineZPull),    // ctrl1
         new THREE.Vector3(bRight + lineArcX, bTop + lineArcY, bMidZ - lineZPull * 0.4) // ctrl2
@@ -727,11 +762,19 @@ class AnimatedTerminal {
 
       applyLidPose(0);
 
+      /* Position click indicator above the closed Mac surface, forward of logo */
+      var indicZ = bodyBox.max.z + 0.15;
+      clickIndicator.position.set(0, bodyBox.max.y + 0.08, indicZ);
+      console.log('[GLB] indicator pos:', 0, bodyBox.max.y + 0.08, indicZ, 'bodyBox.max.z:', bodyBox.max.z);
+
       /* Auto-close is started in the render loop once model is definitely ready in scene. */
     }
 
     masterGroup.add(model);
     modelLoaded = true;
+    /* Hide model initially for intro */
+    masterGroup.position.y = INTRO_Y_OFFSET;
+    masterGroup.rotation.y = INTRO_ROT_Y;
     console.log('[GLB] loaded. scale:', sf);
 
   }, undefined, function(err) {
@@ -766,11 +809,25 @@ class AnimatedTerminal {
 
     /* ── Lid toggle animation (open <-> closed) ── */
     if (lidPivot) {
-      /* State: start playing once model loaded */
+      /* State: start intro fly-in once model loaded */
       if (heroState === 'LOADING' && modelLoaded) {
-        heroState = 'PLAYING';
-        playStartTime = elapsed;
-        if (videoReady) { video.currentTime = 0; video.playbackRate = 1.5; video.play().catch(function(){}); }
+        heroState = 'INTRO';
+        introStartMs = performance.now();
+      }
+
+      /* Intro fly-in animation */
+      if (heroState === 'INTRO') {
+        var it = Math.min((performance.now() - introStartMs) / INTRO_DUR_MS, 1);
+        var ie = it < 0.5 ? 4 * it * it * it : 1 - Math.pow(-2 * it + 2, 3) / 2;
+        masterGroup.position.y = INTRO_Y_OFFSET * (1 - ie);
+        masterGroup.rotation.y = INTRO_ROT_Y * (1 - ie);
+        if (it >= 1) {
+          masterGroup.position.y = 0;
+          masterGroup.rotation.y = 0;
+          heroState = 'PLAYING';
+          playStartTime = elapsed;
+          if (videoReady) { video.currentTime = 0; video.playbackRate = 1.5; video.play().catch(function(){}); }
+        }
       }
       /* Fallback: auto-close after timer if no video */
       if (heroState === 'PLAYING' && !videoReady && elapsed - playStartTime > PLAY_FALLBACK_SEC) {
@@ -825,8 +882,19 @@ class AnimatedTerminal {
     if (lineL) lineL.material.dashOffset -= dt * 2.0;
     if (lineR) lineR.material.dashOffset -= dt * 2.0;
 
-    /* Idle float */
-    if (elapsed >= FLOAT_START) {
+    /* Click indicator pulse */
+    if (clickIndicator.visible) {
+      var pulse = 0.5 + 0.5 * Math.sin(elapsed * 3.0);
+      var ringChild = clickIndicator.children[0];
+      var dotChild  = clickIndicator.children[1];
+      ringChild.material.opacity = 0.25 + pulse * 0.35;
+      dotChild.material.opacity  = 0.4 + pulse * 0.4;
+      var sc = 1.0 + pulse * 0.15;
+      ringChild.scale.set(sc, sc, sc);
+    }
+
+    /* Idle float — only after intro is done */
+    if (heroState !== 'INTRO' && heroState !== 'LOADING' && elapsed >= FLOAT_START) {
       masterGroup.position.y = Math.sin((elapsed - FLOAT_START) * 1.2) * 0.005;
     }
 
