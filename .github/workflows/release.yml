@@ -41,6 +41,59 @@ jobs:
             codesign --force --sign - ".build/universal/$BIN"
           done
 
+      # ── Build .app bundle + DMG ─────────────────────────────────
+      - name: Build app bundle and DMG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          APP_NAME="Coffeetosh"
+          BUILD_DIR="ci-build"
+          APP_BUNDLE="${BUILD_DIR}/${APP_NAME}.app"
+          MACOS_DIR="${APP_BUNDLE}/Contents/MacOS"
+          RESOURCES_DIR="${APP_BUNDLE}/Contents/Resources"
+
+          mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}"
+
+          # Copy universal binaries
+          cp .build/universal/coffeetosh         "${MACOS_DIR}/coffeetosh"
+          cp .build/universal/coffeetosh-daemon  "${MACOS_DIR}/coffeetosh-daemon"
+          cp .build/universal/coffeetosh-cleanup "${MACOS_DIR}/coffeetosh-cleanup"
+          ln -sf coffeetosh "${MACOS_DIR}/${APP_NAME}"
+
+          # Copy resources
+          cp Resources/com.coffeetosh.cleanup.plist "${RESOURCES_DIR}/"
+          cp Resources/com.coffeetosh.daemon.plist  "${RESOURCES_DIR}/"
+
+          # Generate Info.plist
+          cat > "${APP_BUNDLE}/Contents/Info.plist" << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>CFBundleName</key><string>${APP_NAME}</string>
+            <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
+            <key>CFBundleIdentifier</key><string>com.coffeetosh</string>
+            <key>CFBundleVersion</key><string>${VERSION}</string>
+            <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+            <key>CFBundleExecutable</key><string>${APP_NAME}</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>LSMinimumSystemVersion</key><string>13.0</string>
+            <key>LSUIElement</key><true/>
+            <key>NSPrincipalClass</key><string>NSApplication</string>
+            <key>NSHighResolutionCapable</key><true/>
+          </dict></plist>
+          PLIST
+
+          # Ad-hoc sign the bundle
+          codesign --force --deep --sign - "${APP_BUNDLE}"
+
+          # Create DMG
+          hdiutil create \
+            -volname "${APP_NAME}" \
+            -srcfolder "${APP_BUNDLE}" \
+            -ov -format UDZO \
+            "${BUILD_DIR}/${APP_NAME}.dmg"
+
+          echo "DMG_PATH=${BUILD_DIR}/${APP_NAME}.dmg" >> "$GITHUB_ENV"
+
       # ── Package tarball ───────────────────────────────────────────
       - name: Package release tarball
         id: package
@@ -76,7 +129,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: staging/${{ env.TARNAME }}.tar.gz
+          files: |
+            staging/${{ env.TARNAME }}.tar.gz
+            ${{ env.DMG_PATH }}
           body: |
             ## Coffeetosh v${{ env.VERSION }}
 
