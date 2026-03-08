@@ -62,6 +62,7 @@ jobs:
           # Copy resources
           cp Resources/com.coffeetosh.cleanup.plist "${RESOURCES_DIR}/"
           cp Resources/com.coffeetosh.daemon.plist  "${RESOURCES_DIR}/"
+          cp ASSETS/Coffeetosh.icns                 "${RESOURCES_DIR}/Coffeetosh.icns"
 
           # Generate Info.plist
           cat > "${APP_BUNDLE}/Contents/Info.plist" << PLIST
@@ -79,18 +80,24 @@ jobs:
             <key>LSUIElement</key><true/>
             <key>NSPrincipalClass</key><string>NSApplication</string>
             <key>NSHighResolutionCapable</key><true/>
+            <key>CFBundleIconFile</key><string>Coffeetosh</string>
           </dict></plist>
           PLIST
 
           # Ad-hoc sign the bundle
           codesign --force --deep --sign - "${APP_BUNDLE}"
 
+          # Add Applications symlink for drag-and-drop install
+          ln -sf /Applications "${BUILD_DIR}/Applications"
+
           # Create DMG
           hdiutil create \
             -volname "${APP_NAME}" \
-            -srcfolder "${APP_BUNDLE}" \
+            -srcfolder "${BUILD_DIR}" \
             -ov -format UDZO \
             "${BUILD_DIR}/${APP_NAME}.dmg"
+
+          rm -f "${BUILD_DIR}/Applications"
 
           echo "DMG_PATH=${BUILD_DIR}/${APP_NAME}.dmg" >> "$GITHUB_ENV"
 

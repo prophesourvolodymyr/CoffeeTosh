@@ -35,6 +35,7 @@ ln -sf coffeetosh "${MACOS_DIR}/${APP_NAME}"
 
 # ── Copy Resources ──────────────────────────────────────────────
 cp Resources/com.coffeetosh.cleanup.plist "${RESOURCES_DIR}/"
+cp ASSETS/Coffeetosh.icns "${RESOURCES_DIR}/Coffeetosh.icns"
 
 # ── Generate Info.plist ─────────────────────────────────────────
 cat > "${CONTENTS}/Info.plist" << PLIST
@@ -64,6 +65,8 @@ cat > "${CONTENTS}/Info.plist" << PLIST
     <string>NSApplication</string>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>CFBundleIconFile</key>
+    <string>Coffeetosh</string>
 </dict>
 </plist>
 PLIST
@@ -76,12 +79,19 @@ codesign --force --deep --sign - "${APP_BUNDLE}"
 # ── Create DMG ──────────────────────────────────────────────────
 echo "💿 Creating DMG…"
 DMG_PATH="${BUILD_DIR}/${APP_NAME}.dmg"
+
+# Add Applications symlink so users can drag-and-drop to install
+ln -sf /Applications "${BUILD_DIR}/Applications"
+
 hdiutil create \
     -volname "${APP_NAME}" \
-    -srcfolder "${APP_BUNDLE}" \
+    -srcfolder "${BUILD_DIR}" \
     -ov \
     -format UDZO \
     "${DMG_PATH}" 2>&1 | tail -3
+
+# Clean up symlink
+rm -f "${BUILD_DIR}/Applications"
 
 # ── Summary ─────────────────────────────────────────────────────
 echo ""
