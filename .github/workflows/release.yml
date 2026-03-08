@@ -1,0 +1,102 @@
+name: Release
+
+# Triggers on any tag like v1.0.0, v1.2.3-beta, etc.
+on:
+  push:
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: macos-14   # Apple Silicon runner (M1) — builds arm64 natively
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Build both architectures ──────────────────────────────────
+      - name: Build arm64
+        run: swift build -c release --arch arm64
+
+      - name: Build x86_64
+        run: swift build -c release --arch x86_64
+
+      # ── Lipo into universal binaries ──────────────────────────────
+      - name: Create universal binaries
+        run: |
+          mkdir -p .build/universal
+          for BIN in coffeetosh coffeetosh-daemon coffeetosh-cleanup; do
+            lipo -create -output ".build/universal/$BIN" \
+              ".build/arm64-apple-macosx/release/$BIN" \
+              ".build/x86_64-apple-macosx/release/$BIN"
+          done
+
+      # ── Ad-hoc sign (removes "damaged app" on Apple Silicon) ─────
+      - name: Ad-hoc code sign
+        run: |
+          for BIN in coffeetosh coffeetosh-daemon coffeetosh-cleanup; do
+            codesign --force --sign - ".build/universal/$BIN"
+          done
+
+      # ── Package tarball ───────────────────────────────────────────
+      - name: Package release tarball
+        id: package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TARNAME="Coffeetosh-v${VERSION}-macos"
+          STAGING="staging/${TARNAME}"
+
+          mkdir -p "${STAGING}/Resources"
+
+          # Binaries
+          cp .build/universal/coffeetosh         "${STAGING}/"
+          cp .build/universal/coffeetosh-daemon  "${STAGING}/"
+          cp .build/universal/coffeetosh-cleanup "${STAGING}/"
+
+          # Resources (plist templates)
+          cp Resources/com.coffeetosh.daemon.plist  "${STAGING}/Resources/"
+          cp Resources/com.coffeetosh.cleanup.plist "${STAGING}/Resources/"
+
+          # License
+          cp LICENSE "${STAGING}/" 2>/dev/null || true
+
+          # Create tarball
+          cd staging
+          tar -czf "${TARNAME}.tar.gz" "${TARNAME}"
+          SHA=$(shasum -a 256 "${TARNAME}.tar.gz" | awk '{print $1}')
+
+          echo "VERSION=${VERSION}"     >> "$GITHUB_ENV"
+          echo "TARNAME=${TARNAME}"     >> "$GITHUB_ENV"
+          echo "SHA256=${SHA}"          >> "$GITHUB_ENV"
+
+      # ── Create GitHub Release ─────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: staging/${{ env.TARNAME }}.tar.gz
+          generate_release_notes: true
+          body: |
+            ## Coffeetosh v${{ env.VERSION }}
+
+            ### Install via Homebrew (recommended)
+            ```bash
+            brew tap prophesourvolodymyr/coffeetosh https://github.com/prophesourvolodymyr/CoffeeTosh
+            brew install coffeetosh
+            brew services start coffeetosh
+            ```
+
+            ### Manual install
+            ```bash
+            curl -L https://github.com/prophesourvolodymyr/CoffeeTosh/releases/download/v${{ env.VERSION }}/${{ env.TARNAME }}.tar.gz | tar xz
+            cd ${{ env.TARNAME }}
+            sudo cp coffeetosh /usr/local/bin/
+            ```
+
+            ---
+            **For formula maintainers — update `Formula/coffeetosh.rb` sha256 to:**
+            ```
+            ${{ env.SHA256 }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

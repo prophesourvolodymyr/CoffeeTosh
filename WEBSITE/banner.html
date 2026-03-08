@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coffeetosh — GitHub Banner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 1280px;
+      height: 640px;
+      overflow: hidden;
+      background: #1A1310;
+      color: #F0E6D8;
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+    }
+
+    /* Dot grid texture */
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(212,146,58,0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient glow — left */
+    .glow-l {
+      position: absolute;
+      top: -140px; left: -160px;
+      width: 680px; height: 680px;
+      background: radial-gradient(ellipse, rgba(212,146,58,0.09) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Ambient glow — right */
+    .glow-r {
+      position: absolute;
+      bottom: -160px; right: -100px;
+      width: 560px; height: 560px;
+      background: radial-gradient(ellipse, rgba(212,146,58,0.06) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── META CORNER ── */
+    .meta-corner {
+      position: absolute;
+      top: 26px; right: 56px;
+      display: flex; gap: 7px; align-items: center;
+      z-index: 10;
+    }
+    .meta-pill {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 500;
+      color: #7A6655;
+      border: 1px solid rgba(122,102,85,0.28);
+      border-radius: 999px;
+      padding: 4px 11px;
+      background: rgba(26,19,16,0.6);
+    }
+
+    /* ── MAIN BANNER ── */
+    .banner {
+      position: relative;
+      z-index: 2;
+      width: 1280px; height: 640px;
+      display: flex;
+      align-items: center;
+      padding: 56px 60px 56px 72px;
+      gap: 0;
+    }
+
+    /* ─────── LEFT ─────── */
+    .left {
+      flex-shrink: 0;
+      width: 570px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 26px;
+    }
+    .brand-icon { width: 30px; height: 30px; color: #D4923A; }
+    .brand-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900; font-size: 18px;
+      color: #F0E6D8; letter-spacing: -0.3px;
+    }
+
+    .headline {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 60px;
+      line-height: 1.0;
+      letter-spacing: -2.8px;
+      color: #F0E6D8;
+      margin-bottom: 14px;
+    }
+    .headline .acc { color: #D4923A; }
+
+    .subline {
+      font-size: 15.5px;
+      color: #A89680;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 30px;
+      letter-spacing: -0.1px;
+    }
+
+    /* 4 Points */
+    .points {
+      display: flex; flex-direction: column; gap: 9px;
+      margin-bottom: 30px;
+    }
+    .point {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 13.5px; color: #A89680; line-height: 1.45;
+    }
+    .point-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: #D4923A; }
+    .point strong { color: #E4D0B8; font-weight: 600; }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      color: #E4B469; font-size: 12.5px;
+    }
+
+    /* Download row */
+    .dl-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 22px; border-radius: 999px;
+      background: #D4923A; color: #1A1008;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900; font-size: 14px;
+      text-decoration: none; letter-spacing: -0.1px;
+      box-shadow: 0 4px 18px rgba(212,146,58,0.3);
+    }
+
+    .brew-pill {
+      display: inline-flex; align-items: center;
+      border-radius: 9px; overflow: hidden;
+      border: 1px solid rgba(212,146,58,0.2);
+    }
+    .brew-pre {
+      background: rgba(212,146,58,0.08);
+      color: #7A6655;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      padding: 9px 10px;
+      border-right: 1px solid rgba(212,146,58,0.15);
+    }
+    .brew-cmd {
+      background: #0C0C0C;
+      color: #E4B469;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      padding: 9px 14px;
+    }
+
+    /* ─────── DIVIDER ─────── */
+    .divider {
+      flex-shrink: 0;
+      width: 1px;
+      height: 380px;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(212,146,58,0.18) 25%,
+        rgba(212,146,58,0.18) 75%,
+        transparent 100%
+      );
+      margin: 0 52px;
+    }
+
+    /* ─────── RIGHT: Terminal ─────── */
+    .right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .terminal {
+      width: 468px;
+      border-radius: 13px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(212,146,58,0.16),
+        0 28px 70px rgba(0,0,0,0.6),
+        0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .t-bar {
+      background: #272727;
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .t-dots { display: flex; gap: 6px; }
+    .t-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .t-red    { background: #ff5f57; }
+    .t-yellow { background: #febc2e; }
+    .t-green  { background: #28c840; }
+    .t-title {
+      flex: 1; text-align: center;
+      font-family: 'Inter', sans-serif; font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      margin-right: 58px;
+    }
+
+    .t-body {
+      background: #0C0C0C;
+      padding: 18px 20px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: #F0E6D8;
+    }
+
+    .tp { color: #D4923A; } /* prompt */
+    .td { color: #5A4A3A; } /* dim */
+    .tg { color: #5acf70; } /* green */
+    .to { color: #E4B469; } /* orange/gold */
+    .tw { color: #F0E6D8; } /* white */
+    .tm { color: #7A6655; } /* muted */
+
+    .t-gap { height: 10px; display: block; }
+    .t-line { display: block; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .cursor {
+      display: inline-block;
+      width: 7px; height: 14px;
+      background: #D4923A;
+      vertical-align: middle;
+      margin-left: 1px;
+      animation: blink 1.1s step-end infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-l"></div>
+  <div class="glow-r"></div>
+
+  <!-- Top-right meta pills -->
+  <div class="meta-corner">
+    <span class="meta-pill">macOS 13 Ventura+</span>
+    <span class="meta-pill">MIT License</span>
+    <span class="meta-pill">Free &amp; Open Source</span>
+  </div>
+
+  <div class="banner">
+
+    <!-- ═══ LEFT ═══ -->
+    <div class="left">
+
+      <!-- Brand -->
+      <div class="brand">
+        <svg class="brand-icon" viewBox="-2 0 28 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 5.5 v 7.5 c 0 4.5 4 8.5 8.5 8.5 s 8.5 -4 8.5 -8.5 v -7.5"/>
+          <ellipse cx="11" cy="5.5" rx="8.5" ry="2.8"/>
+          <path d="M19.5 8.5 c 4.5 0, 4.5 6, 0 6"/>
+          <line x1="8" y1="10.5" x2="8" y2="12.5"/>
+          <line x1="14" y1="10.5" x2="14" y2="12.5"/>
+          <path d="M11.5 11 v 2.5 a 1 1 0 0 1 -1 1"/>
+          <path d="M8 16 Q 11 18.5 14 16"/>
+        </svg>
+        <span class="brand-name">Coffeetosh</span>
+      </div>
+
+      <!-- Headline -->
+      <div class="headline">
+        Lid <span class="acc">closed.</span><br>Mac awake.
+      </div>
+
+      <div class="subline">One command. No hacks. Forever free.</div>
+
+      <!-- 4 Points -->
+      <div class="points">
+        <div class="point">
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="10.5" y1="6" x2="13.5" y2="6"/><line x1="10" y1="18.5" x2="14" y2="18.5"/></svg>
+          <div><strong>SSH from your phone</strong> — Close the lid, walk away. Remote in from any device, any OS.</div>
+        </div>
+        <div class="point">
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <div><strong>One command runs it</strong> — <span class="mono">coffeetosh start 8</span> and you're done. Nothing to configure.</div>
+        </div>
+        <div class="point">
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l8 3.8V11c0 4.8-3.4 9.3-8 10.5C7.4 20.3 4 15.8 4 11V5.8L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <div><strong>No system hacks</strong> — Uses Apple's own pmset. No SIP bypass, no kernel extensions.</div>
+        </div>
+        <div class="point">
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+          <div><strong>MIT, always free</strong> — Open source. Read the code, fork it, use it forever.</div>
+        </div>
+      </div>
+
+      <!-- Download CTAs -->
+      <div class="dl-row">
+        <!-- TODO: Replace href with your actual .dmg release URL -->
+        <a href="https://github.com/prophesourvolodymyr/CoffeeTosh/releases/latest/download/CoffeeTosh.dmg" class="btn-dl">
+          <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3v13M7 11l5 5 5-5M3 19h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download for Mac
+        </a>
+        <div class="brew-pill">
+          <span class="brew-pre">brew</span>
+          <span class="brew-cmd">brew install coffeetosh</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Vertical divider -->
+    <div class="divider"></div>
+
+    <!-- ═══ RIGHT: Terminal ═══ -->
+    <div class="right">
+      <div class="terminal">
+        <div class="t-bar">
+          <div class="t-dots">
+            <div class="t-dot t-red"></div>
+            <div class="t-dot t-yellow"></div>
+            <div class="t-dot t-green"></div>
+          </div>
+          <div class="t-title">zsh — coffeetosh</div>
+        </div>
+        <div class="t-body">
+          <span class="t-line"><span class="tp">$ </span><span class="tw">coffeetosh start 8</span></span>
+          <span class="t-line"><span class="to">☕ Coffeetosh started!</span></span>
+          <span class="t-line"><span class="td">   Mode:     </span><span class="tw">Lid Closed</span></span>
+          <span class="t-line"><span class="td">   Duration: </span><span class="tw">8h</span></span>
+          <span class="t-line"><span class="td">   Daemon:   </span><span class="tw">PID 4821</span></span>
+          <span class="t-gap"></span>
+          <span class="t-line"><span class="tp">$ </span><span class="tw">coffeetosh status</span></span>
+          <span class="t-line"><span class="tg">Coffeetosh: ACTIVE</span><span class="tm"> (Lid Closed)</span></span>
+          <span class="t-line"><span class="td">Started:   </span><span class="tm">2026-03-07 22:10</span></span>
+          <span class="t-line"><span class="td">Remaining: </span><span class="tw">7h 58m</span></span>
+          <span class="t-line"><span class="td">Lid:       </span><span class="tw">Closed 🔒</span></span>
+          <span class="t-gap"></span>
+          <span class="t-line"><span class="tp">$ </span><span class="tw">coffeetosh battery</span></span>
+          <span class="t-line"><span class="td">Battery:   </span><span class="tw">79% — discharging</span></span>
+          <span class="t-line"><span class="td">Time:      </span><span class="tw">3:42 remaining</span></span>
+          <span class="t-gap"></span>
+          <span class="t-line"><span class="tp">$ </span><span class="cursor"></span></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!--
+  ═══════════════════════════════════════════════════════
+  TODOS — fill in before committing to GitHub:
+
+  TODO: Confirm Homebrew tap/cask name when published to Homebrew
+  TODO: Replace download href once release is tagged & .dmg is live
+  TODO: Add shields.io star count badge (meta-pill area, top-right)
+  TODO: Screenshot at exactly 1280×640, 100% zoom, no browser chrome
+        → Save as: docs/banner.png  (or .github/banner.png)
+  TODO: Add to README.md:
+        ![Coffeetosh](docs/banner.png)
+  ═══════════════════════════════════════════════════════
+  -->
+
+</body>
+</html>

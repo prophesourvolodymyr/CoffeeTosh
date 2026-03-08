@@ -105,6 +105,35 @@
       align-items: center;
       gap: 10px;
     }
+    /* Donate button */
+    .nav-donate-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #c47a1e 0%, #e8a83a 50%, #c47a1e 100%);
+      background-size: 200% 100%;
+      color: #1a1008;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.1px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.2s, background-position 0.4s;
+      box-shadow: 0 0 0 0 rgba(212,146,58,0);
+      animation: donate-pulse 2.8s ease-in-out infinite;
+    }
+    .nav-donate-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 24px rgba(212,146,58,0.55);
+      animation: none;
+      background-position: 100% 0;
+    }
+    @keyframes donate-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,146,58,0.0); }
+      50%       { box-shadow: 0 0 0 6px rgba(212,146,58,0.28); }
+    }
     .nav-star-icon {
       width: 14px;
       height: 14px;
@@ -121,7 +150,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: calc(var(--nav-h) + 40px) 0 40px;
+      padding: calc(var(--nav-h) + 8px) 0 8px;
       overflow: visible;
     }
     .hero-inner {
@@ -140,31 +169,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 6px;
       max-width: 860px;
       width: 100%;
       padding: 0 24px;
-    }
-    .live-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--bg-card);
-      border-radius: 999px;
-      padding: 5px 14px;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 13px;
-      color: var(--text-secondary);
-      opacity: 0;
-    }
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-      flex-shrink: 0;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
@@ -181,18 +189,19 @@
     .hero-headline .word { display: inline-block; opacity: 0; }
     .hero-headline .word-alive { color: var(--accent); }
     .hero-sub {
-      font-size: clamp(1rem, 2vw, 1.2rem);
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
       color: var(--text-secondary);
       max-width: 520px;
       opacity: 0;
+      margin-top: 2px;
     }
 
     /* ── Illustration ── */
     .hero-illus {
       position: relative;
       width: 100vw;
-      height: 80vh;
-      margin-top: -10px;
+      height: 65vh;
+      margin-top: -4px;
       flex-shrink: 0;
     }
     #laptop-canvas {
@@ -216,7 +225,7 @@
     }
 
     /* ── CTA button ── */
-    .hero-cta-wrap { position: relative; width: 100%; display: flex; justify-content: center; margin-top: 8px; opacity: 0; }
+    .hero-cta-wrap { position: relative; z-index: 2; width: 100%; display: flex; justify-content: center; margin-top: -44px; opacity: 0; }
     .hero-btn {
       position: relative;
       display: inline-flex;
@@ -421,7 +430,7 @@
       position: relative;
       overflow: hidden;
       border-radius: 18px;
-      aspect-ratio: 16 / 10;
+      aspect-ratio: 4 / 5;
       background:
         radial-gradient(circle at 12% 12%, rgba(228,180,105,0.18), transparent 40%),
         linear-gradient(145deg, rgba(108,65,32,0.35), rgba(26,19,16,0.95));
@@ -1271,10 +1280,10 @@
         padding: 0 0 60px;
         overflow-y: visible;
       }
-      .hero-illus { width: 100vw; height: 85vh; margin-top: 4px; }
+      .hero-illus { width: 100vw; height: 58vh; margin-top: -4px; }
       .download-cols { grid-template-columns: 1fr; }
       .stat-cards { grid-template-columns: repeat(3,1fr); }
-      .hero { padding-top: calc(var(--nav-h) + 24px); }
+      .hero { padding-top: calc(var(--nav-h) + 6px); }
       .scene-visual { display: flex; justify-content: center; }
       .terminal-window, .dashboard-window { max-width: 100%; }
       .nav { padding: 0 18px; }
@@ -1292,7 +1301,7 @@
 
   <!-- ════════════════════════ NAV ════════════════════════ -->
   <nav class="nav" aria-label="Main navigation">
-    <a href="index2.html" class="nav-brand" aria-label="Coffeetosh home">
+    <a href="index.html" class="nav-brand" aria-label="Coffeetosh home">
       <svg class="nav-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;" aria-hidden="true">
         <style>
           .liq-rise { animation: fluid-rise 5s ease-in-out infinite; }
@@ -1343,6 +1352,9 @@
       <span class="nav-name">Coffeetosh</span>
     </a>
     <div class="nav-right-group">
+      <a href="https://buymeacoffee.com/coffeetosh" target="_blank" rel="noopener noreferrer" class="nav-donate-btn" aria-label="Buy Coffeetosh a Coffee">
+        ☕ Buy Coffeetosh a Coffee
+      </a>
       <a href="https://github.com/prophesourvolodymyr/CoffeeTosh" target="_blank" rel="noopener noreferrer" class="nav-star-btn" aria-label="Star Coffeetosh on GitHub">
         <svg class="nav-star-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 3.5l2.66 5.4 5.96.87-4.3 4.2 1.02 5.93L12 17.1 6.66 19.9l1.02-5.93-4.3-4.2 5.96-.87L12 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1358,16 +1370,11 @@
 
     <!-- Text block (max-width constrained) -->
     <div class="hero-inner">
-      <div class="live-badge" id="live-badge" aria-label="Status indicator">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span>Coffeetosh is running</span>
-      </div>
-
       <h1 class="hero-headline" aria-label="Addicting your mac to stay alive">
         <span class="word">Addicting</span>&nbsp;<span class="word">your</span>&nbsp;<span class="word">mac</span>&nbsp;<span class="word">to</span>&nbsp;<span class="word">stay</span>&nbsp;<span class="word word-alive">alive</span>
       </h1>
 
-      <p class="hero-sub">The open-source sleep preventer for macOS. No root hacks. Free forever.</p>
+      <p class="hero-sub">Keeps your Mac awake using native macOS power management — no admin access, no system modifications. Open-source and free forever.</p>
     </div>
 
     <!-- 3D illustration — direct child of .hero so width:100vw works exactly as in Section 1 -->
@@ -1421,8 +1428,8 @@
           <div class="scene-visual">
             <div class="feature-video-card" aria-label="Homepage product demo video">
               <div class="feature-video-frame">
-                <video class="feature-video" muted loop playsinline preload="metadata" poster="assets/homepage-scene-1-poster.jpg">
-                  <source src="assets/homepage-scene-1.mp4" type="video/mp4" />
+                <video class="feature-video" muted loop playsinline preload="metadata">
+                  <source src="assets/Animation 1.mp4" type="video/mp4" />
                 </video>
               </div>
             </div>
@@ -1707,7 +1714,7 @@
         <span class="footer-name">Coffeetosh</span>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
-        <a href="index2.html">Home</a>
+        <a href="index.html">Home</a>
         <span class="footer-sep">·</span>
         <a href="download.html">Download</a>
         <span class="footer-sep">·</span>
@@ -1729,7 +1736,7 @@
       confetti({ particleCount: 80, spread: 90, colors: ['#D4923A', '#F0E6D8', '#ffffff'], origin: { y: 0.6 } });
     }
 
-        /* --- Three.js Hero - Full MacBook + Phones (Section 1) --- */
+            /* --- Three.js Hero - Full MacBook + Phones (Section 1) --- */
     (function(){
   /* Rounded box helper (from animation1 composition). */
   function makeRoundedBoxGeo(w, h, d, r) {
@@ -1777,7 +1784,7 @@
   const isMobile = W < 700;
   const camera = new THREE.PerspectiveCamera(isMobile ? 60 : 35, W / H, 0.01, 100);
   camera.position.set(0, isMobile ? 0.6 : 0.55, isMobile ? 3.5 : 3.0);
-  camera.lookAt(0, -0.2, 0);
+  camera.lookAt(0, 0.24, 0);
 
   /* Lights */
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -2065,8 +2072,8 @@ class AnimatedTerminal {
   const termR = new AnimatedTerminal('R');
   // Desktop: phones wider flanking laptop. Mobile: tighter, higher, stacked look.
   const phoneXOff = isMobile ? 0.55 : 1.25;
-  const phoneYL  = isMobile ? 0.45 : 0.10;
-  const phoneYR  = isMobile ? 0.35 : 0.00;
+  const phoneYL  = isMobile ? 0.55 : 0.58;
+  const phoneYR  = isMobile ? 0.45 : 0.48;
   const phoneL = createPhone(-phoneXOff, phoneYL, 0.35,  0.25, -0.06, -0.06, termL);
   const phoneR = createPhone( phoneXOff, phoneYR, 0.40, -0.25, -0.06,  0.06, termR);
   masterGroup.add(phoneL, phoneR);
@@ -2227,7 +2234,7 @@ class AnimatedTerminal {
     var box1 = new THREE.Box3().setFromObject(model);
     var ctr = box1.getCenter(new THREE.Vector3());
     model.position.sub(ctr);
-    model.position.y -= 0.12;
+    model.position.y += 0.42;
     model.updateMatrixWorld(true);
 
     let lidNode = null, bodyNode = null;
@@ -2562,7 +2569,6 @@ class AnimatedTerminal {
     (function heroTimeline() {
       const tl = gsap.timeline({ delay: 0.2 });
       tl.to('.nav', { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' });
-      tl.to('#live-badge', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.2');
       tl.to('.hero-headline .word', {
         opacity: 1, y: 0, duration: 0.6,
         ease: 'back.out(1.2)', stagger: 0.07
@@ -2572,7 +2578,6 @@ class AnimatedTerminal {
 
       // Initial states
       gsap.set('.nav', { y: -60, opacity: 0 });
-      gsap.set('#live-badge', { y: 10 });
       gsap.set('.hero-headline .word', { opacity: 0, y: 40 });
       gsap.set('.hero-sub', { opacity: 0 });
       gsap.set('#hero-cta-wrap', { y: 20, opacity: 0 });
@@ -2586,52 +2591,103 @@ class AnimatedTerminal {
       btn.addEventListener('mouseleave', () => gsap.to(btn, { scale: 1.0,  duration: 0.18, ease: 'power2.out' }));
     })();
 
-    /* ─── Playful Download Button (first-visit easter egg) ─── */
+    /* ─── Magnet Button: cursor must NEVER touch it ─── */
     (function playfulBtn() {
-      var btn = document.getElementById('hero-btn');
-      if (!btn) return;
-      var btnSpan = btn.querySelector('#hero-btn-text') || btn.querySelector('span');
-      if (!btnSpan) return;
+      var btn     = document.getElementById('hero-btn');
+      var btnSpan = document.getElementById('hero-btn-text');
+      if (!btn || !btnSpan) return;
+
+      /* Tuning constants */
+      var WATCH_DIST = 130;  // px from anchor center — enter this zone to start fleeing
+      var ORBIT_R    = 90;   // escape orbit radius — stays nearby, still uncatchable
+      var MIN_SAFE   = 65;   // hard guarantee: cursor never within this px of button center
+      var LERP_FLEE  = 0.40; // fast snap toward escape target each frame
+      var LERP_HOME  = 0.10; // soft glide back when cursor leaves
+
       var origText = btnSpan.textContent;
-      var isFirstVisit = !sessionStorage.getItem('ct_btn_seen');
-      var evadeCount = 0;
-      var MAX_EVADES = 4;
-      var isEvading = false;
-      var resetTimer = null;
-      var funnyTexts = ['Learn First \uD83D\uDE0F', 'Not so fast!', 'Read the docs \uD83D\uDC40', 'Catch me!'];
-      if (!isFirstVisit) return;
-      btn.addEventListener('click', function(e) {
-        if (isFirstVisit && evadeCount < MAX_EVADES) e.preventDefault();
-      });
+      var anchorX = 0, anchorY = 0;
+      var measured = false;
+      var hasMouse = false; // don't react to default center-screen ghost position
+      var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+
+      var curX = 0, curY = 0;
+      var angle = Math.PI;
+
+      btn.style.transition = 'none';
+      btn.style.willChange = 'transform';
+
       document.addEventListener('mousemove', function(e) {
-        if (!isFirstVisit || evadeCount >= MAX_EVADES) return;
-        var rect = btn.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-        if (dist < 60 && !isEvading) {
-          isEvading = true;
-          if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
-          evadeCount++;
-          var dx = e.clientX - cx;
-          var moveX = dx > 0 ? -160 : 160;
-          var moveY = (Math.random() - 0.5) * 50;
-          btn.style.transform = 'translate(' + moveX + 'px,' + moveY + 'px)';
-          btnSpan.textContent = funnyTexts[(evadeCount - 1) % funnyTexts.length];
-        } else if (dist > 200 && isEvading) {
-          isEvading = false;
-          resetTimer = setTimeout(function() {
-            btn.style.transform = 'translate(0,0)';
-            if (evadeCount >= MAX_EVADES) {
-              btnSpan.textContent = origText;
-              isFirstVisit = false;
-              sessionStorage.setItem('ct_btn_seen', '1');
-            } else {
-              btnSpan.textContent = origText;
-            }
-          }, 400);
-        }
+        mx = e.clientX; my = e.clientY;
+        hasMouse = true;
       });
+
+      function measureAnchor() {
+        var wrap = document.getElementById('hero-cta-wrap');
+        if (!wrap || parseFloat(getComputedStyle(wrap).opacity) < 0.5) return false;
+        btn.style.transform = 'translate(0,0)';
+        var r = btn.getBoundingClientRect();
+        anchorX = r.left + r.width  / 2;
+        anchorY = r.top  + r.height / 2;
+        curX = 0; curY = 0;
+        return true;
+      }
+
+      function loop() {
+        if (!measured) { measured = measureAnchor(); requestAnimationFrame(loop); return; }
+
+        /* Update anchor only when button is at rest — avoids chasing displaced btn */
+        if (curX === 0 && curY === 0) {
+          var _wrap = document.getElementById('hero-cta-wrap');
+          if (_wrap && parseFloat(getComputedStyle(_wrap).opacity) >= 0.5) {
+            var _wr = _wrap.getBoundingClientRect();
+            anchorX = _wr.left + _wr.width  / 2;
+            anchorY = _wr.top  + _wr.height / 2;
+          }
+        }
+
+        var dxC = mx - anchorX;
+        var dyC = my - anchorY;
+        var distFromCenter = Math.sqrt(dxC * dxC + dyC * dyC);
+        var fleeing = hasMouse && distFromCenter < WATCH_DIST;
+
+        if (fleeing) {
+          /* Escape to the point diametrically opposite the cursor */
+          var targetAngle = Math.atan2(dyC, dxC) + Math.PI;
+          var diff = targetAngle - angle;
+          diff -= Math.PI * 2 * Math.floor((diff + Math.PI) / (Math.PI * 2));
+          angle += diff * LERP_FLEE;
+
+          curX += (Math.cos(angle) * ORBIT_R - curX) * LERP_FLEE;
+          curY += (Math.sin(angle) * ORBIT_R - curY) * LERP_FLEE;
+
+          /* ── Hard safety net: teleport if cursor is still within MIN_SAFE ── */
+          var btnWX = anchorX + curX;
+          var btnWY = anchorY + curY;
+          var dSx = mx - btnWX, dSy = my - btnWY;
+          if (dSx * dSx + dSy * dSy < MIN_SAFE * MIN_SAFE) {
+            angle = targetAngle;
+            curX = Math.cos(angle) * ORBIT_R;
+            curY = Math.sin(angle) * ORBIT_R;
+          }
+
+          btn.style.boxShadow = '0 0 28px 8px rgba(212,146,58,0.55)';
+          btn.style.filter    = 'brightness(1.18)';
+          btnSpan.textContent = 'Scroll first 😏';
+        } else {
+          curX += (0 - curX) * LERP_HOME;
+          curY += (0 - curY) * LERP_HOME;
+          if (Math.abs(curX) < 0.4 && Math.abs(curY) < 0.4) { curX = 0; curY = 0; }
+
+          btn.style.boxShadow = '';
+          btn.style.filter    = '';
+          btnSpan.textContent = origText;
+        }
+
+        btn.style.transform = 'translate(' + curX.toFixed(1) + 'px,' + curY.toFixed(1) + 'px)';
+        requestAnimationFrame(loop);
+      }
+
+      requestAnimationFrame(loop);
     })();
 
     const featureVideo = document.querySelector('.feature-video');
@@ -2680,13 +2736,22 @@ class AnimatedTerminal {
     function resetSceneVideo() {
       if (!featureVideo) return;
       featureVideo.pause();
-      try { featureVideo.currentTime = 0; } catch (_) {}
+      try { featureVideo.currentTime = 0.30; } catch (_) {}
     }
 
     function playSceneVideo() {
       if (!featureVideo) return;
-      resetSceneVideo();
-      featureVideo.play().catch(() => {});
+      featureVideo.pause();
+      const seek = () => {
+        featureVideo.removeEventListener('seeked', seek);
+        featureVideo.play().catch(() => {});
+      };
+      try {
+        featureVideo.currentTime = 0.30;
+        featureVideo.addEventListener('seeked', seek, { once: true });
+      } catch (_) {
+        featureVideo.play().catch(() => {});
+      }
     }
 
     function resetTerminal() {
@@ -2873,6 +2938,7 @@ class AnimatedTerminal {
           });
           activeScene = 1;
           updateIndicator(0.06, 1);
+          handleSceneEnter(1);
           createDesktopFlow();
           return () => {
             if (activeScene > 0) handleSceneExit(activeScene);

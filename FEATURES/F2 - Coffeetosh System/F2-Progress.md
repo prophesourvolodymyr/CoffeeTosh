@@ -138,4 +138,25 @@
 - [x] In `ContentView`, observe `lidOpenedDuringSession` flag via `.onChange` and `.onAppear`.
 - [x] When flag is `true` and session is active: present inline overlay in the timer block with two buttons — **Stop** and **Continue**.
 - [x] "Continue" clears the flag in `status.json` and dismisses. "Stop" calls the normal stop flow.
+
+## 🆕 PHASE 13: Homebrew Distribution
+
+*Prepare the codebase so users can install Coffeetosh via `brew install`.*
+
+### Codebase Infrastructure
+- [x] Add `LICENSE` (MIT) — required by Homebrew formula `license` field and GitHub open-source norms.
+- [x] Create `Resources/com.coffeetosh.daemon.plist` — LaunchAgent template for the background daemon (previously missing; only cleanup plist existed).
+- [x] Create `Makefile` with `build`, `universal`, `install`, `uninstall` targets (prefix-aware, formula-friendly).
+- [x] Create `.github/workflows/release.yml` — on `v*` tag push: build arm64 + x86_64, lipo universal binaries, ad-hoc sign, package tarball, create GitHub Release with SHA256 printed in release notes.
+- [x] Create `Formula/coffeetosh.rb` — Homebrew formula (downloads pre-built binary tarball, `brew services` daemon support, caveats, test block).
+
+### User Steps to Ship v1.2.0
+- [ ] Push: `git tag v1.2.0 && git push --tags` → GitHub Actions builds + creates the Release.
+- [ ] Copy the SHA256 from the release body into `Formula/coffeetosh.rb` (`sha256` field), then push.
+- [ ] Share install command:
+  ```
+  brew tap prophesourvolodymyr/coffeetosh https://github.com/prophesourvolodymyr/CoffeeTosh
+  brew install coffeetosh
+  brew services start coffeetosh
+  ```
 - [x] Daemon writes `lidOpenedDuringSession = true` on lid-open and clears brightness (one-shot — consumed by GUI on next popover open).
