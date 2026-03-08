@@ -1,0 +1,17 @@
+# Xcode build output
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.swiftpm/
+*.resolved
+
+# Test snapshots / temp files
+test_*.swift
+tex.swift
+fix_anim.sh
