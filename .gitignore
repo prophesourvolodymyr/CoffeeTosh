@@ -40,11 +40,11 @@ __MACOSX/
 *.zip
 
 # ── AI workflow / planning (local only, not public) ─────────
-JUNK/
-NOTES/
-INSTRUCTIONS/
-WORK/
+7-JUNK/
+3-NOTES/
+6-INSTRUCTIONS/
+5-WORK/
+4-FEATURES/
+2-GENERAL/
+1-GM/
 AGENTS.md
-FEATURES/
-GENERAL/
-GM/
