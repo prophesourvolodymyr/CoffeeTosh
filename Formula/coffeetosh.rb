@@ -2,7 +2,7 @@ class Coffeetosh < Formula
   desc "Mac session manager – Lid Closed mode, Keep Awake timer, and system daemon"
   homepage "https://github.com/prophesourvolodymyr/CoffeeTosh"
   url "https://github.com/prophesourvolodymyr/CoffeeTosh/releases/download/v1.2.0/Coffeetosh-v1.2.0-macos.tar.gz"
-  sha256 "PLACEHOLDER_UPDATE_AFTER_RELEASE"
+  sha256 "abfb07332c844539edaea13de1848fdd984a3202873e708aaa0646f77f1009dc"
   license "MIT"
   version "1.2.0"
 

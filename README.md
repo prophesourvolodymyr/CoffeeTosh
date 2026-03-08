@@ -37,11 +37,28 @@ Coffeetosh is a macOS menu bar app and CLI tool that prevents your MacBook from 
 3. Launch the app, then enable the CLI from the menu bar:
    **Menu bar icon → Settings → Install CLI Tool**
 
+> **⚠️ macOS Gatekeeper warning ("app is damaged" or ⊘ icon)**
+> Because the app is not yet signed with an Apple Developer ID, macOS may show a warning or block launch.
+> Run this once in Terminal after dragging to Applications:
+> ```bash
+> xattr -cr /Applications/Coffeetosh.app
+> ```
+> Then double-click the app normally. Alternatively, right-click → **Open** the first time.
+
 ### Option B — Homebrew
 
 ```bash
 brew install coffeetosh
 ```
+
+---
+
+## Known Issues / In Progress
+
+- [x] Fix the Liquid simulation on page 4 of onboarding.
+- [x] Make numbers change up quicker on the menu pop-up.
+- [x] Fix Mac lid alignment on the website.
+- [x] Finalize the "Are you sure" pop-up when the lid opens.
 
 ---
 
