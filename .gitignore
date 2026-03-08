@@ -39,5 +39,12 @@ __MACOSX/
 *.app
 *.zip
 
-# ── Junk folder (project scratch) ───────────────────────────
+# ── AI workflow / planning (local only, not public) ─────────
 JUNK/
+NOTES/
+INSTRUCTIONS/
+WORK/
+AGENTS.md
+FEATURES/
+GENERAL/
+GM/
