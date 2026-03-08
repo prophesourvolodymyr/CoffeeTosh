@@ -887,7 +887,7 @@ struct AboutView: View {
             VStack(spacing: 10) {
                 HStack(spacing: 12) {
                     // GitHub
-                    Link(destination: URL(string: "https://github.com/volodymurvasualkiw/Coffeetosh")!) {
+                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/CoffeeTosh")!) {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left.forwardslash.chevron.right")
                                 .font(.system(size: 12, weight: .semibold))
@@ -903,7 +903,7 @@ struct AboutView: View {
                     }
 
                     // Report a Bug
-                    Link(destination: URL(string: "https://github.com/volodymurvasualkiw/Coffeetosh/issues/new")!) {
+                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/CoffeeTosh/issues/new")!) {
                         HStack(spacing: 6) {
                             Image(systemName: "ladybug.fill")
                                 .font(.system(size: 12, weight: .semibold))
