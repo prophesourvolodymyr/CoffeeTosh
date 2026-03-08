@@ -230,6 +230,19 @@ struct ContentView: View {
 
                 Spacer()
 
+                Button(action: {
+                    if let url = URL(string: "https://buymeacoffee.com/professorvolodymyr") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }) {
+                    Text("☕ Buy a Coffee")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color(red: 0.83, green: 0.57, blue: 0.23))
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
                 Button("Quit") {
                     if appState.status.active { showQuitAlert = true }
                     else { NSApplication.shared.terminate(nil) }
