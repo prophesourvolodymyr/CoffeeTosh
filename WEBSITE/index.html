@@ -1782,7 +1782,9 @@
   /* ── Three.js setup ── */
   const canvas = document.getElementById('laptop-canvas');
   const container = document.getElementById('hero-illus');
-  const W = container.clientWidth, H = container.clientHeight;
+  /* Fallback: if layout hasn't painted yet clientHeight may be 0 — use vp size */
+  const W = container.clientWidth  || window.innerWidth;
+  const H = container.clientHeight || Math.round(window.innerHeight * 0.65);
 
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(W, H);
@@ -1791,7 +1793,7 @@
 
   const scene = new THREE.Scene();
   const isMobile = W < 700;
-  const camera = new THREE.PerspectiveCamera(isMobile ? 60 : 35, W / H, 0.01, 100);
+  const camera = new THREE.PerspectiveCamera(isMobile ? 60 : 35, W / H || 1, 0.01, 100);
   camera.position.set(0, isMobile ? 0.6 : 0.55, isMobile ? 3.5 : 3.0);
   camera.lookAt(0, 0.24, 0);
 
@@ -2600,11 +2602,17 @@ class AnimatedTerminal {
       btn.addEventListener('mouseleave', () => gsap.to(btn, { scale: 1.0,  duration: 0.18, ease: 'power2.out' }));
     })();
 
-    /* ─── Magnet Button: cursor must NEVER touch it ─── */
+    /* ─── Magnet Button: runs away on first visit, sits still on return visits ─── */
     (function playfulBtn() {
       var btn     = document.getElementById('hero-btn');
       var btnSpan = document.getElementById('hero-btn-text');
       if (!btn || !btnSpan) return;
+
+      /* First-visit gate: check localStorage */
+      var isFirstVisit = !localStorage.getItem('ct_visited');
+      if (isFirstVisit) { localStorage.setItem('ct_visited', '1'); }
+      if (!isFirstVisit) return; /* returning visitor — leave the button alone */
+
 
       /* Tuning constants */
       var WATCH_DIST = 130;  // px from anchor center — enter this zone to start fleeing
