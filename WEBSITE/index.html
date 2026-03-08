@@ -1088,6 +1088,7 @@
       color: var(--text-primary);
     }
     .copy-code .copy-prompt { color: var(--accent); }
+    .copy-code .copy-op { color: #7a6a55; }
     .copy-btn {
       padding: 5px 12px;
       border-radius: 6px;
@@ -1655,7 +1656,7 @@
             <div class="win-title" style="margin-right:0;">zsh</div>
           </div>
           <div class="copy-body">
-            <code class="copy-code"><span class="copy-prompt">$ </span>brew install coffeetosh</code>
+            <code class="copy-code"><span class="copy-prompt">$ </span>brew tap prophesourvolodymyr/coffeetosh <span class="copy-op">&amp;&amp;</span> brew install coffeetosh</code>
             <button class="copy-btn" id="copy-brew-btn" aria-label="Copy brew install command" onclick="copyBrew(this)">Copy</button>
           </div>
         </div>
@@ -2415,33 +2416,33 @@ class AnimatedTerminal {
     var dt = clock.getDelta();
     elapsed += dt;
 
-    /* ── Lid toggle animation (open <-> closed) ── */
+    /* ── State machine: runs regardless of whether hinge nodes were found ── */
+    if (heroState === 'LOADING' && modelLoaded) {
+      heroState = 'INTRO';
+      introStartMs = performance.now();
+    }
+
+    /* Intro fly-in animation */
+    if (heroState === 'INTRO') {
+      var it = Math.min((performance.now() - introStartMs) / INTRO_DUR_MS, 1);
+      var ie = it < 0.5 ? 4 * it * it * it : 1 - Math.pow(-2 * it + 2, 3) / 2;
+      masterGroup.position.y = INTRO_Y_OFFSET * (1 - ie);
+      masterGroup.rotation.y = INTRO_ROT_Y * (1 - ie);
+      if (it >= 1) {
+        masterGroup.position.y = 0;
+        masterGroup.rotation.y = 0;
+        heroState = 'PLAYING';
+        playStartTime = elapsed;
+        if (videoReady) { video.currentTime = 0; video.playbackRate = 1.5; video.play().catch(function(){}); }
+      }
+    }
+    /* Fallback: auto-close after timer if no video */
+    if (heroState === 'PLAYING' && !videoReady && elapsed - playStartTime > PLAY_FALLBACK_SEC) {
+      startAutoClose();
+    }
+
+    /* ── Lid hinge animation (only when hinge nodes were found in GLB) ── */
     if (lidPivot) {
-      /* State: start intro fly-in once model loaded */
-      if (heroState === 'LOADING' && modelLoaded) {
-        heroState = 'INTRO';
-        introStartMs = performance.now();
-      }
-
-      /* Intro fly-in animation */
-      if (heroState === 'INTRO') {
-        var it = Math.min((performance.now() - introStartMs) / INTRO_DUR_MS, 1);
-        var ie = it < 0.5 ? 4 * it * it * it : 1 - Math.pow(-2 * it + 2, 3) / 2;
-        masterGroup.position.y = INTRO_Y_OFFSET * (1 - ie);
-        masterGroup.rotation.y = INTRO_ROT_Y * (1 - ie);
-        if (it >= 1) {
-          masterGroup.position.y = 0;
-          masterGroup.rotation.y = 0;
-          heroState = 'PLAYING';
-          playStartTime = elapsed;
-          if (videoReady) { video.currentTime = 0; video.playbackRate = 1.5; video.play().catch(function(){}); }
-        }
-      }
-      /* Fallback: auto-close after timer if no video */
-      if (heroState === 'PLAYING' && !videoReady && elapsed - playStartTime > PLAY_FALLBACK_SEC) {
-        startAutoClose();
-      }
-
       if (lidIsAnimating) {
         var t = Math.min((performance.now() - lidAnimStartMs) / LID_TOGGLE_DUR_MS, 1);
         var e = ease(t);
@@ -3126,7 +3127,7 @@ class AnimatedTerminal {
 
     /* ─── Copy Brew ─── */
     function copyBrew(btn) {
-      navigator.clipboard.writeText('brew install coffeetosh').then(() => {
+      navigator.clipboard.writeText('brew tap prophesourvolodymyr/coffeetosh && brew install coffeetosh').then(() => {
         const orig = btn.textContent;
         btn.textContent = 'Copied!';
         btn.style.color = 'var(--accent)';
