@@ -87,17 +87,17 @@ jobs:
           # Ad-hoc sign the bundle
           codesign --force --deep --sign - "${APP_BUNDLE}"
 
-          # Add Applications symlink for drag-and-drop install
-          ln -sf /Applications "${BUILD_DIR}/Applications"
-
-          # Create DMG
-          hdiutil create \
-            -volname "${APP_NAME}" \
-            -srcfolder "${BUILD_DIR}" \
-            -ov -format UDZO \
-            "${BUILD_DIR}/${APP_NAME}.dmg"
-
-          rm -f "${BUILD_DIR}/Applications"
+          # Create DMG with positioned icons (app left, Applications right)
+          brew install create-dmg 2>/dev/null || true
+          create-dmg \
+            --volname "${APP_NAME}" \
+            --window-size 540 340 \
+            --icon-size 100 \
+            --icon "${APP_NAME}.app" 140 170 \
+            --app-drop-link 400 170 \
+            --hide-extension "${APP_NAME}.app" \
+            "${BUILD_DIR}/${APP_NAME}.dmg" \
+            "${APP_BUNDLE}"
 
           echo "DMG_PATH=${BUILD_DIR}/${APP_NAME}.dmg" >> "$GITHUB_ENV"
 

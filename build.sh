@@ -80,18 +80,17 @@ codesign --force --deep --sign - "${APP_BUNDLE}"
 echo "💿 Creating DMG…"
 DMG_PATH="${BUILD_DIR}/${APP_NAME}.dmg"
 
-# Add Applications symlink so users can drag-and-drop to install
-ln -sf /Applications "${BUILD_DIR}/Applications"
-
-hdiutil create \
-    -volname "${APP_NAME}" \
-    -srcfolder "${BUILD_DIR}" \
-    -ov \
-    -format UDZO \
-    "${DMG_PATH}" 2>&1 | tail -3
-
-# Clean up symlink
-rm -f "${BUILD_DIR}/Applications"
+# create-dmg handles icon positioning and Applications shortcut
+# Install if missing: brew install create-dmg
+create-dmg \
+    --volname "${APP_NAME}" \
+    --window-size 540 340 \
+    --icon-size 100 \
+    --icon "${APP_NAME}.app" 140 170 \
+    --app-drop-link 400 170 \
+    --hide-extension "${APP_NAME}.app" \
+    "${DMG_PATH}" \
+    "${APP_BUNDLE}"
 
 # ── Summary ─────────────────────────────────────────────────────
 echo ""
