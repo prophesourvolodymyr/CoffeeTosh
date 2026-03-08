@@ -10,6 +10,8 @@ jobs:
   release:
     name: Build & Release
     runs-on: macos-14   # Apple Silicon runner (M1) — builds arm64 natively
+    permissions:
+      contents: write   # Required to create GitHub Releases and upload assets
 
     steps:
       - name: Checkout
