@@ -2402,6 +2402,25 @@ class AnimatedTerminal {
   });
   canvas.style.cursor = 'pointer';
 
+  /* ── Cursor parallax ── */
+  var mouseNX = 0, mouseNY = 0;       /* normalized -1..1 */
+  var curTiltX = 0, curTiltY = 0;    /* smoothed tilt (radians) */
+  var TILT_MAX_X = 0.10;             /* vertical tilt   ≈ 6° */
+  var TILT_MAX_Y = 0.14;             /* horizontal tilt ≈ 8° */
+  var TILT_LERP  = 0.055;            /* smoothing — lower = silkier */
+
+  window.addEventListener('mousemove', function(e) {
+    mouseNX = (e.clientX / window.innerWidth)  * 2 - 1;
+    mouseNY = (e.clientY / window.innerHeight) * 2 - 1;
+  });
+  window.addEventListener('mouseleave', function() { mouseNX = 0; mouseNY = 0; });
+  window.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 0) {
+      mouseNX = (e.touches[0].clientX / window.innerWidth)  * 2 - 1;
+      mouseNY = (e.touches[0].clientY / window.innerHeight) * 2 - 1;
+    }
+  }, { passive: true });
+
   /* ── Animation ── */
   const clock = new THREE.Clock();
   let elapsed = 0;
@@ -2502,9 +2521,17 @@ class AnimatedTerminal {
       ringChild.scale.set(sc, sc, sc);
     }
 
-    /* Idle float — only after intro is done */
-    if (heroState !== 'INTRO' && heroState !== 'LOADING' && elapsed >= FLOAT_START) {
-      masterGroup.position.y = Math.sin((elapsed - FLOAT_START) * 1.2) * 0.005;
+    /* Idle float + cursor parallax — only after intro is done */
+    if (heroState !== 'INTRO' && heroState !== 'LOADING') {
+      /* Smooth float bob */
+      if (elapsed >= FLOAT_START) {
+        masterGroup.position.y = Math.sin((elapsed - FLOAT_START) * 1.2) * 0.005;
+      }
+      /* Lerp tilt toward cursor target */
+      curTiltY += (mouseNX * TILT_MAX_Y - curTiltY) * TILT_LERP;
+      curTiltX += (-mouseNY * TILT_MAX_X - curTiltX) * TILT_LERP;
+      masterGroup.rotation.y = curTiltY;
+      masterGroup.rotation.x = curTiltX;
     }
 
     renderer.render(scene, camera);
