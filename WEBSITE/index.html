@@ -16,6 +16,7 @@
   <meta name="twitter:title" content="Coffeetosh — Keep Your Mac Awake" />
   <meta name="twitter:description" content="Prevent macOS sleep with the lid closed. One terminal command. Free, open source, MIT licensed." />
   <meta name="twitter:image" content="https://raw.githubusercontent.com/prophesourvolodymyr/CoffeeTosh/main/WEBSITE/assets/Banner%20Read%20Me.png" />
+  <link rel="icon" href="assets/logo-filled.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -1746,6 +1747,7 @@
     }
 
             /* --- Three.js Hero - Full MacBook + Phones (Section 1) --- */
+    requestAnimationFrame(function() {
     (function(){
   /* Rounded box helper (from animation1 composition). */
   function makeRoundedBoxGeo(w, h, d, r) {
@@ -2515,7 +2517,8 @@ class AnimatedTerminal {
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
   });
-})();
+    })(); /* end Three.js IIFE */
+    }); /* end requestAnimationFrame */
 
     /* --- Three.js Steam Particles ─── */
     (function initSteam() {
