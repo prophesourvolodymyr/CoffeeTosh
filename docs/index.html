@@ -2398,8 +2398,8 @@ class AnimatedTerminal {
   /* ── Cursor parallax ── */
   var mouseNX = 0, mouseNY = 0;       /* normalized -1..1 */
   var curTiltX = 0, curTiltY = 0;    /* smoothed tilt (radians) */
-  var TILT_MAX_X = 0.10;             /* vertical tilt   ≈ 6° */
-  var TILT_MAX_Y = 0.14;             /* horizontal tilt ≈ 8° */
+  var TILT_MAX_X = 0.055;            /* vertical tilt   ≈ 3° */
+  var TILT_MAX_Y = 0.075;            /* horizontal tilt ≈ 4° */
   var TILT_LERP  = 0.055;            /* smoothing — lower = silkier */
 
   window.addEventListener('mousemove', function(e) {
@@ -3106,6 +3106,27 @@ class AnimatedTerminal {
         nav.style.borderBottom = '1px solid rgba(212,146,58,0.18)';
       }
     }, { passive: true });
+
+    /* ─── FAQ entrance animations ─── */
+    (function initFaqAnim() {
+      gsap.set('#faq-section .sec-heading', { opacity: 0, y: 30 });
+      gsap.set('.faq-item', { opacity: 0, y: 28 });
+
+      ScrollTrigger.create({
+        trigger: '#faq-section',
+        start: 'top 82%',
+        once: true,
+        onEnter: function() {
+          gsap.to('#faq-section .sec-heading', {
+            opacity: 1, y: 0, duration: 0.55, ease: 'power2.out'
+          });
+          gsap.to('.faq-item', {
+            opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
+            stagger: 0.1, delay: 0.15
+          });
+        }
+      });
+    })();
 
     /* ─── Lazy ScrollTrigger refresh ─── */
     window.addEventListener('load', () => ScrollTrigger.refresh());
