@@ -1119,6 +1119,8 @@
       background: linear-gradient(180deg, rgba(52,41,32,0.86), rgba(42,32,25,0.96));
       overflow: hidden;
       box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      opacity: 0;
+      transform: translateY(28px);
     }
     .faq-item summary {
       list-style: none;
@@ -3109,20 +3111,20 @@ class AnimatedTerminal {
 
     /* ─── FAQ entrance animations ─── */
     (function initFaqAnim() {
+      /* heading starts invisible via gsap.set so it matches the CSS-less heading */
       gsap.set('#faq-section .sec-heading', { opacity: 0, y: 30 });
-      gsap.set('.faq-item', { opacity: 0, y: 28 });
 
       ScrollTrigger.create({
         trigger: '#faq-section',
-        start: 'top 82%',
+        start: 'top 88%',
         once: true,
         onEnter: function() {
           gsap.to('#faq-section .sec-heading', {
             opacity: 1, y: 0, duration: 0.55, ease: 'power2.out'
           });
           gsap.to('.faq-item', {
-            opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
-            stagger: 0.1, delay: 0.15
+            opacity: 1, y: 0, duration: 0.55, ease: 'power2.out',
+            stagger: 0.12, delay: 0.18
           });
         }
       });
