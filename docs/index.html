@@ -3088,15 +3088,28 @@ class AnimatedTerminal {
       gsap.set('#benefits-list li', { opacity: 0, y: 10 });
     })();
 
-    /* ─── Copy Brew ─── */
-    function copyBrew(btn) {
-      navigator.clipboard.writeText('brew tap prophesourvolodymyr/coffeetosh && brew install coffeetosh').then(() => {
+    /* ─── Copy Brew (exposed globally for onclick) ─── */
+    window.copyBrew = function(btn) {
+      const text = 'brew tap prophesourvolodymyr/coffeetosh && brew install coffeetosh';
+      const done = () => {
         const orig = btn.textContent;
         btn.textContent = 'Copied!';
         btn.style.color = 'var(--accent)';
         setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
-      }).catch(() => {});
-    }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+          document.execCommand('copy', false, text);
+          done();
+        });
+      } else {
+        const el = document.createElement('textarea');
+        el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+        document.body.appendChild(el); el.select();
+        document.execCommand('copy'); document.body.removeChild(el);
+        done();
+      }
+    };
 
     /* ─── Scroll-based nav border ─── */
     window.addEventListener('scroll', () => {

@@ -718,12 +718,27 @@
 
   <script>
     function copyCmd(btn, text) {
-      navigator.clipboard.writeText(text).then(() => {
+      const done = () => {
         const orig = btn.textContent;
         btn.textContent = 'Copied!';
         btn.style.color = '#28c840';
         setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
-      });
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+          const el = document.createElement('textarea');
+          el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+          document.body.appendChild(el); el.select();
+          document.execCommand('copy'); document.body.removeChild(el);
+          done();
+        });
+      } else {
+        const el = document.createElement('textarea');
+        el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+        document.body.appendChild(el); el.select();
+        document.execCommand('copy'); document.body.removeChild(el);
+        done();
+      }
     }
   </script>
 </body>
