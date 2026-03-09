@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="WEBSITE/assets/Banner%20Read%20Me.png" alt="Coffeetosh — Lid closed. Mac awake." width="800"/>
+<img src="docs/assets/Banner%20Read%20Me.png" alt="Coffeetosh — Lid closed. Mac awake." width="800"/>
 
 # Coffeetosh
 
