@@ -382,25 +382,34 @@ struct StatCard: View {
             AnimatedNumberText(number: current, format: format)
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(warmAmber)
+                .animation(nil, value: current == 0) // kill implicit parent animation on reset
         }
         .padding(16)
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .background(Color.white.opacity(0.05))
         .cornerRadius(8)
         .onAppear {
-            current = 0
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            // Snap to 0 without any animation (override parent implicit spring)
+            var snap = Transaction()
+            snap.animation = nil
+            withTransaction(snap) { current = 0 }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 withAnimation(.easeOut(duration: 1.1)) {
                     current = value
                 }
             }
         }
         // Re-animate when stats reload after a session ends.
-        // Always count UP from 0 — never animate downward.
         .onChange(of: value) { newVal in
-            current = 0
-            withAnimation(.easeOut(duration: 0.9)) {
-                current = newVal
+            var snap = Transaction()
+            snap.animation = nil
+            withTransaction(snap) { current = 0 }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                withAnimation(.easeOut(duration: 0.9)) {
+                    current = newVal
+                }
             }
         }
     }
@@ -1297,6 +1306,7 @@ struct DashboardToggleRow: View {
 
 #Preview("Dashboard Main") {
     MainDashboardView()
+        .environmentObject(AppState())
 }
 
 #Preview("Onboarding") {
