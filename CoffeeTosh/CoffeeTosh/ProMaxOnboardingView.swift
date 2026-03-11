@@ -162,6 +162,7 @@ struct OnboardingPageHook: View {
 
             Image("logo-filled")
                 .resizable()
+                .aspectRatio(contentMode: .fit)
                 .renderingMode(.template)
                 .foregroundColor(warmAmber)
                 .frame(width: 180, height: 180)

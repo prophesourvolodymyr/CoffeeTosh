@@ -232,8 +232,7 @@ final class StatusBarManager: NSObject {
         // subsequent lookups by the same name.
         if let img = NSImage(named: catalogName)?.copy() as? NSImage {
             img.isTemplate = true
-            // Don't force a square size — SVG viewBox is 28×24 (7:6), forcing
-            // 18×18 squishes it. Let the system pick the right menu-bar size.
+            img.size = NSSize(width: 18, height: 18)
             button.image   = img
         } else if let sym = NSImage(systemSymbolName: symbolName,
                                     accessibilityDescription: catalogName) {

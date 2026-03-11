@@ -842,6 +842,7 @@ struct AboutView: View {
             // ── Logo ─────────────────────────────────────────────────────────
             logoImage
                 .resizable()
+                .aspectRatio(contentMode: .fit)
                 .renderingMode(isNamedAsset ? .template : .original)
                 .foregroundColor(isNamedAsset ? warmAmber : .white)
                 .frame(width: 96, height: 96)
