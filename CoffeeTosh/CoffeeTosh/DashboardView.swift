@@ -388,6 +388,7 @@ struct StatCard: View {
         .background(Color.white.opacity(0.05))
         .cornerRadius(8)
         .onAppear {
+            current = 0
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 withAnimation(.easeOut(duration: 1.1)) {
                     current = value
@@ -395,10 +396,9 @@ struct StatCard: View {
             }
         }
         // Re-animate when stats reload after a session ends.
-        // onAppear only fires once — if loadData() updates stats while the
-        // Analytics tab is already visible, current would stay at the stale
-        // (initially 0) value without this onChange handler.
+        // Always count UP from 0 — never animate downward.
         .onChange(of: value) { newVal in
+            current = 0
             withAnimation(.easeOut(duration: 0.9)) {
                 current = newVal
             }
@@ -887,7 +887,7 @@ struct AboutView: View {
             VStack(spacing: 10) {
                 HStack(spacing: 12) {
                     // GitHub
-                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/CoffeeTosh")!) {
+                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/Coffeetosh")!) {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left.forwardslash.chevron.right")
                                 .font(.system(size: 12, weight: .semibold))
@@ -903,7 +903,7 @@ struct AboutView: View {
                     }
 
                     // Report a Bug
-                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/CoffeeTosh/issues/new")!) {
+                    Link(destination: URL(string: "https://github.com/prophesourvolodymyr/Coffeetosh/issues/new")!) {
                         HStack(spacing: 6) {
                             Image(systemName: "ladybug.fill")
                                 .font(.system(size: 12, weight: .semibold))
@@ -920,7 +920,7 @@ struct AboutView: View {
                 }
 
                 // ── Donate ───────────────────────────────────────────────────
-                Link(destination: URL(string: "https://buymeacoffee.com/coffeetosh")!) {
+                Link(destination: URL(string: "https://buymeacoffee.com/professorvolodymyr")!) {
                     HStack(spacing: 8) {
                         // Buy Me a Coffee logo tile
                         ZStack {
