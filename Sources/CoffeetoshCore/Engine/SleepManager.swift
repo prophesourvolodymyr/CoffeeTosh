@@ -142,14 +142,17 @@ public final class SleepManager {
             targetMode = status.mode // Use the mode from file as source of truth!
             // Compute actual elapsed seconds — not the preset duration.
             let actualSecs = Int(Date().timeIntervalSince(status.startTime ?? Date()))
-            let item = SessionHistoryItem(
-                startTime: status.startTime ?? Date(),
-                durationSeconds: status.durationSeconds,
-                actualDurationSeconds: max(1, actualSecs),
-                mode: status.mode,
-                endReason: reason
-            )
-            HistoryManager.shared.appendSession(item)
+            // Skip sessions shorter than 3 minutes — likely accidental taps.
+            if actualSecs >= 180 {
+                let item = SessionHistoryItem(
+                    startTime: status.startTime ?? Date(),
+                    durationSeconds: status.durationSeconds,
+                    actualDurationSeconds: max(1, actualSecs),
+                    mode: status.mode,
+                    endReason: reason
+                )
+                HistoryManager.shared.appendSession(item)
+            }
         }
 
         switch targetMode {

@@ -232,7 +232,7 @@ final class StatusBarManager: NSObject {
         // subsequent lookups by the same name.
         if let img = NSImage(named: catalogName)?.copy() as? NSImage {
             img.isTemplate = true
-            img.size = NSSize(width: 18, height: 18)
+            img.size = NSSize(width: 28, height: 24)
             button.image   = img
         } else if let sym = NSImage(systemSymbolName: symbolName,
                                     accessibilityDescription: catalogName) {
