@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="docs/assets/Banner%20Read%20Me.png" alt="Coffeetosh — Lid closed. Mac awake." width="800"/>
+<img src="docs/assets/logo-filled.svg" alt="Coffeetosh logo" width="180"/>
 
 # Coffeetosh
 
-**Keep your MacBook alive with the lid closed. One command.Easy to use. Forever free.**
+**Keep your MacBook alive with the lid closed. One command. Easy to use. Forever free.**
 
 macOS 13+ &nbsp;·&nbsp; Swift &nbsp;·&nbsp; MIT License
 
@@ -53,12 +53,14 @@ brew install coffeetosh
 
 ---
 
-## Known Issues / In Progress(Not Main fuctions - Dev needs help)
+## What You Should Know
 
-- [ ] Fix the Liquid simulation on page 4 of onboarding.
-- [ ] Make numbers change up quicker on the menu pop-up.
-- [ ] Fix Mac lid alignment on the website.
-- [ ] Finalize the "Continue session?" pop-up when the lid opens.
+- **Screen turns off, system stays on** — In Lid Closed mode, the display turns off when you close the MacBook lid while the CPU stays fully awake.
+- **Admin password required for Lid Closed** — macOS prompts for your admin password when starting a Lid Closed session because Coffeetosh uses `pmset` to override system sleep.
+- **Opening the lid locks the Mac** — If the lid opens during a session, Coffeetosh locks the Mac with the macOS lock screen. Your password is required to continue.
+- **SSH continues to work** — The Mac stays networked, so you can SSH in, run scripts, and manage it remotely while the lid is closed.
+- **Sessions run in the background** — Closing the Coffeetosh window or quitting the app does not stop an active session. Use `coffeetosh stop` or the Stop button.
+- **Timers are optional** — Use `0` for an indefinite session. It continues until you explicitly stop it.
 
 ---
 
@@ -87,7 +89,7 @@ coffeetosh stop
 
 | Mode | Flag | Use case | Admin required |
 |------|------|----------|----------------|
-| **Lid Closed** | `--mode coffeetosh` (default) | Headless server, SSH, overnight tasks | Yes — `pmset` once at start, once at stop |
+| **Lid Closed** | `--mode lid-closed` (default) | Headless server, SSH, overnight tasks | Yes — `pmset` once at start, once at stop |
 | **Keep Awake** | `--mode keep-awake` | Presentations, downloads, monitoring | No |
 
 Add `--low-power` to any Lid Closed session to simultaneously enable macOS Low Power Mode. It is restored automatically on stop.

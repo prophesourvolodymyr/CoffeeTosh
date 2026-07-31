@@ -74,6 +74,13 @@ public enum PowerSavingHelper {
         print("[PowerSavingHelper] 🔅 Power saving restored (from status)")
     }
 
+    /// Immediately sleeps connected displays without changing system sleep policy.
+    /// Used when a timed session ends so an open-lid test cannot leave the display lit.
+    public static func sleepDisplayNow() {
+        _ = ShellHelper.run("pmset displaysleepnow")
+        print("[PowerSavingHelper] 🌙 Display sleep requested")
+    }
+
     // MARK: - Low Power Mode ─────────────────────────────────────
 
     private static func enableLowPowerMode() {

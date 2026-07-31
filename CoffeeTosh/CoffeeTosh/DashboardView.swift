@@ -860,7 +860,7 @@ struct AboutView: View {
                 .animation(.spring(response: 0.45, dampingFraction: 0.7).delay(0.14), value: appeared)
 
             // ── Version pill ─────────────────────────────────────────────────
-            Text("Version 1.2.0")
+            Text("Version 1.2.1")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(warmAmber)
                 .padding(.horizontal, 10)

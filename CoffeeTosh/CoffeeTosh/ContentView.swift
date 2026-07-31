@@ -21,7 +21,7 @@ struct PresetDuration: Hashable {
 }
 
 let durationPresets: [PresetDuration] = [
-    PresetDuration(label: "30m", seconds: 30 * 60),
+    PresetDuration(label: "10s", seconds: 10),
     PresetDuration(label: "1h", seconds: 60 * 60),
     PresetDuration(label: "2h", seconds: 120 * 60),
     PresetDuration(label: "3h", seconds: 180 * 60),
@@ -44,6 +44,7 @@ struct ContentView: View {
     @State private var showSettings         = false
     @State private var showExpiryPrompt     = false
     @State private var showLidOpenedPrompt  = false
+    @State private var isStartingSession    = false
 
     // Live timer string
     @State private var timerText: String = "00:00:00"
@@ -97,7 +98,7 @@ struct ContentView: View {
             }
             .pickerStyle(.segmented)
             .disabled(isLocked)
-            .colorMultiply(isLocked ? textSecondary : .white)
+            .tint(warmAmber)
 
             // ── Timer Block ───────────────────────────────────────────────────
             ZStack {
@@ -130,42 +131,6 @@ struct ContentView: View {
                             .background(Capsule().fill(warmAmber))
                             .buttonStyle(.plain)
                     }
-                } else if showLidOpenedPrompt {
-                    VStack(spacing: 6) {
-                        Text("Lid Opened")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(warmAmber)
-                        Text("Session is still running")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(textPrimary.opacity(0.7))
-                        HStack(spacing: 8) {
-                            Button("Stop") {
-                                showLidOpenedPrompt = false
-                                toggleSession()
-                            }
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(popoverBase)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
-                            .background(Capsule().fill(Color.red.opacity(0.8)))
-                            .buttonStyle(.plain)
-
-                            Button("Continue") {
-                                // Consume the flag so we don't show again
-                                if var s = try? StatusFileManager.read() {
-                                    s.lidOpenedDuringSession = nil
-                                    try? StatusFileManager.write(s)
-                                }
-                                showLidOpenedPrompt = false
-                            }
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(popoverBase)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
-                            .background(Capsule().fill(warmAmber))
-                            .buttonStyle(.plain)
-                        }
-                    }
                 } else {
                     Text(timerText)
                         .font(.system(size: 34, weight: .bold, design: .monospaced))
@@ -183,7 +148,10 @@ struct ContentView: View {
             // ── Duration Grid ─────────────────────────────────────────────────
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(durationPresets, id: \.self) { preset in
-                    Button(action: { selectedDuration = preset.seconds }) {
+                    Button(action: {
+                        selectedDuration = preset.seconds
+                        updateLiveTimer()
+                    }) {
                         Text(preset.label)
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(selectedDuration == preset.seconds ? popoverBase : textPrimary)
@@ -204,17 +172,18 @@ struct ContentView: View {
 
             // ── CTA Button ────────────────────────────────────────────────────
             Button(action: pressToggle) {
-                Text(isLocked ? "Stop Session" : "Start Session")
+                Text(isStartingSession ? "Starting..." : (isLocked ? "Stop Session" : "Start Session"))
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(popoverBase)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 10)
                             .fill(isLocked ? Color.red : warmAmber)
                     )
             }
             .buttonStyle(.plain)
+            .disabled(isStartingSession)
             .scaleEffect(btnScale)
             .animation(.spring(response: 0.2, dampingFraction: 0.55), value: btnScale)
 
@@ -229,17 +198,6 @@ struct ContentView: View {
                 .buttonStyle(.plain)
 
                 Spacer()
-
-                Button(action: {
-                    if let url = URL(string: "https://buymeacoffee.com/professorvolodymyr") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }) {
-                    Text("☕ Buy a Coffee")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(red: 0.83, green: 0.57, blue: 0.23))
-                }
-                .buttonStyle(.plain)
 
                 Spacer()
 
@@ -306,6 +264,22 @@ struct ContentView: View {
             }
         )
         .animation(.easeInOut(duration: 0.25), value: showSettings)
+        .overlay {
+            if showLidOpenedPrompt {
+                LidOpenedConfirmationView(
+                    onStop: {
+                        consumeLidOpenedFlag()
+                        showLidOpenedPrompt = false
+                        toggleSession()
+                    },
+                    onContinue: {
+                        consumeLidOpenedFlag()
+                        showLidOpenedPrompt = false
+                    }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.97)))
+            }
+        }
     }
 
     // MARK: - Button press with spring bounce
@@ -340,6 +314,12 @@ struct ContentView: View {
         }
     }
 
+    private func consumeLidOpenedFlag() {
+        guard var status = try? StatusFileManager.read() else { return }
+        status.lidOpenedDuringSession = nil
+        try? StatusFileManager.write(status)
+    }
+
     // MARK: - Session toggle
     private func toggleSession() {
         if appState.status.active {
@@ -353,44 +333,123 @@ struct ContentView: View {
                 SleepManager.shared.restore()
             }
         } else {
+            isStartingSession = true
             if selectedMode == .headless {
-                // Mode B: run on a background thread so the admin dialog
-                // (SecurityAgent) can appear and receive key events without
-                // the main thread being blocked.  Do NOT set active
-                // optimistically — if the user cancels the password prompt,
-                // activate() returns false and we must not pretend the
-                // session started.  The FileSystemWatcher will confirm the
-                // real state once status.json is written on success.
                 let dur = selectedDuration
                 DispatchQueue.global(qos: .userInitiated).async {
-                    SleepManager.shared.activate(
+                    guard SleepManager.shared.preActivateModeBAdmin(useSudo: false) else {
+                        DispatchQueue.main.async { isStartingSession = false }
+                        return
+                    }
+                    let pendingStatus = CoffeetoshStatus(
+                        active: true,
                         mode: .headless,
+                        startTime: Date(),
+                        durationSeconds: dur
+                    )
+                    try? StatusFileManager.write(pendingStatus)
+                    guard DaemonLauncher.launch() != nil else {
+                        try? StatusFileManager.markInactive()
+                        _ = ShellHelper.runWithAdmin("pmset -a disablesleep 0")
+                        DispatchQueue.main.async { isStartingSession = false }
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        isStartingSession = false
+                        appState.status = (try? StatusFileManager.read()) ?? pendingStatus
+                    }
+                }
+            } else {
+                let dur = selectedDuration
+                let mod = selectedMode
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let activated = SleepManager.shared.activate(
+                        mode: mod,
                         durationSeconds: dur,
                         skipAdmin: false
                     )
-                }
-            } else {
-                SleepManager.shared.activate(
-                    mode: selectedMode,
-                    durationSeconds: selectedDuration,
-                    skipAdmin: false
-                )
-                // Optimistic: flip the full status so the onChange handler reads
-                // the correct mode + durationSeconds, not the stale inactive struct
-                // (which has durationSeconds: 0).  Without this, onChange would
-                // overwrite selectedDuration = 0 and the timer would flicker to ∞.
-                let dur = selectedDuration
-                let mod = selectedMode
-                DispatchQueue.main.async {
-                    var optimistic = self.appState.status
-                    optimistic.active = true
-                    optimistic.mode = mod
-                    optimistic.durationSeconds = dur
-                    optimistic.startTime = Date()
-                    self.appState.status = optimistic
+                    DispatchQueue.main.async {
+                        isStartingSession = false
+                        guard activated else { return }
+                        var optimistic = appState.status
+                        optimistic.active = true
+                        optimistic.mode = mod
+                        optimistic.durationSeconds = dur
+                        optimistic.startTime = Date()
+                        appState.status = optimistic
+                    }
                 }
             }
         }
+    }
+}
+
+private struct LidOpenedConfirmationView: View {
+    let onStop: () -> Void
+    let onContinue: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.28)
+
+            VStack(spacing: 0) {
+                ZStack {
+                    Circle()
+                        .fill(warmAmber.opacity(0.16))
+                        .frame(width: 56, height: 56)
+                    Image("logo-filled")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 34, height: 34)
+                }
+                .padding(.top, 18)
+                .padding(.bottom, 10)
+
+                Text("Continue session?")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(textPrimary)
+
+                Text("The lid opened while CoffeeTosh was keeping your Mac awake.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 28)
+                    .padding(.top, 8)
+
+                Divider()
+                    .overlay(textSecondary.opacity(0.2))
+                    .padding(.top, 18)
+
+                HStack(spacing: 10) {
+                    Button(action: onStop) {
+                        Text("Stop")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
+
+                    Button(action: onContinue) {
+                        Text("Continue")
+                            .frame(maxWidth: .infinity)
+                    }
+                        .buttonStyle(.borderedProminent)
+                        .tint(warmAmber)
+                }
+                .controlSize(.regular)
+                .padding(16)
+            }
+            .frame(width: 252)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            }
+            .shadow(color: .black.opacity(0.45), radius: 24, y: 10)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .zIndex(10)
     }
 }
 

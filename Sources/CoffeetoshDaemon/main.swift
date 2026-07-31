@@ -168,6 +168,10 @@ while true {
                 print("[coffeetosh-daemon] 🔆 Brightness restored to \(String(format: "%.1f%%", originalBrightness * 100))")
             }
 
+            // End the session completely: restore policy first, then request
+            // display sleep so an open-lid run cannot leave the screen lit.
+            PowerSavingHelper.sleepDisplayNow()
+
             // Write expiredAt so GUI can trigger the "Session ended" popover
             var expired = current
             expired.active = false

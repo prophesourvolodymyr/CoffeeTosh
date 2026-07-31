@@ -121,6 +121,14 @@ public final class SleepManager {
             originalPmsetSnapshot = nil
             return false
         }
+
+        // Install sudoers rule (one-time, best effort) so the daemon can
+        // restore pmset without password — critical for lid-closed timer expiry.
+        // The sudo token from the password above is still cached, so this is silent.
+        if !SudoersInstaller.isInstalled {
+            SudoersInstaller.installSilent()
+        }
+
         print("[SleepManager] Mode B Pre-Activate: pmset disablesleep 1 — SET")
         return true
     }
@@ -208,13 +216,21 @@ public final class SleepManager {
     // MARK: - Mode B (Full — Interactive) ─────────────────────────
 
     /// Full Mode B activation: admin pmset + caffeinate.
-    /// Used for CLI foreground mode or future GUI.
+    /// Used for CLI foreground mode or GUI.
     private func activateModeB() -> Bool {
         // 1. Capture original pmset settings
         originalPmsetSnapshot = ShellHelper.run("pmset -g")
         print("[SleepManager] Mode B: Captured original pmset snapshot (\(originalPmsetSnapshot?.count ?? 0) chars)")
 
-        // 2. Disable system sleep via admin-escalated pmset
+        // 2. Install sudoers rule if needed (one-time, best effort).
+        //    Doing this FIRST means the pmset command below can use sudo -n
+        //    (the rule makes sudo -n pmset work permanently — one dialog total).
+        if !SudoersInstaller.isInstalled {
+            _ = SudoersInstaller.install()
+        }
+
+        // 3. Disable system sleep via admin-escalated pmset.
+        //    If sudoers is installed, sudo -n succeeds → no dialog.
         let pmsetOk = ShellHelper.runWithAdmin("pmset -a disablesleep 1")
         guard pmsetOk else {
             print("[SleepManager] ⚠️ Mode B: pmset admin escalation failed — aborting.")
@@ -223,7 +239,7 @@ public final class SleepManager {
         }
         print("[SleepManager] Mode B: pmset disablesleep 1 — SET")
 
-        // 3. Fork caffeinate subprocess
+        // 4. Fork caffeinate subprocess
         let cafPid = caffeinate.start()
         if cafPid == nil {
             print("[SleepManager] ⚠️ Mode B: caffeinate failed to start (pmset still active, continuing)")

@@ -245,12 +245,17 @@ func handleStop() {
 
     // For Mode B: restore pmset from CLI (daemon may not be able to sudo)
     if status.mode == .headless {
-        print("🔐 Restoring pmset (may require password)…")
-        _ = ShellHelper.runWithSudo("pmset -a disablesleep 0")
+        // Try passwordless first (works if sudoers rule is installed)
+        if !ShellHelper.runWithAdminNoPrompt("pmset -a disablesleep 0") {
+            print("🔐 Restoring pmset (may require password)…")
+            _ = ShellHelper.runWithSudo("pmset -a disablesleep 0")
+        }
 
         // Restore Low Power Mode if we enabled it
         if status.lowPowerEnabled == true {
-            _ = ShellHelper.runWithSudo("pmset -a lowpowermode 0")
+            if !ShellHelper.runWithAdminNoPrompt("pmset -a lowpowermode 0") {
+                _ = ShellHelper.runWithSudo("pmset -a lowpowermode 0")
+            }
         }
     }
 

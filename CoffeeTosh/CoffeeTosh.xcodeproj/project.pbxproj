@@ -107,6 +107,7 @@
 				FFAF95582F57481A000A447A /* Sources */,
 				FFAF95592F57481A000A447A /* Frameworks */,
 				FFAF955A2F57481A000A447A /* Resources */,
+				FFAF95902F576000000A447A /* Embed coffeetosh-daemon */,
 			);
 			buildRules = (
 			);
@@ -202,7 +203,7 @@
 			mainGroup = FFAF95532F57481A000A447A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				FFAF95872F57563B000A447A /* XCLocalSwiftPackageReference "../../Coffeetosh" */,
+				FFAF95872F57563B000A447A /* XCLocalSwiftPackageReference "../../Coffetosh" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FFAF955D2F57481A000A447A /* Products */;
@@ -239,6 +240,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		FFAF95902F576000000A447A /* Embed coffeetosh-daemon */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../Package.swift",
+				"$(SRCROOT)/../Sources/CoffeetoshDaemon/main.swift",
+				"$(SRCROOT)/../Sources/CoffeetoshCore/Utilities/PowerSavingHelper.swift",
+			);
+			name = "Embed coffeetosh-daemon";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/MacOS/coffeetosh-daemon",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nPACKAGE_ROOT=\"${SRCROOT}/..\"\nBIN_PATH=$(swift build --package-path \"${PACKAGE_ROOT}\" --product coffeetosh-daemon --configuration debug --show-bin-path)\nmkdir -p \"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/MacOS\"\ncp \"${BIN_PATH}/coffeetosh-daemon\" \"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/MacOS/coffeetosh-daemon\"\nchmod 755 \"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/MacOS/coffeetosh-daemon\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		FFAF95582F57481A000A447A /* Sources */ = {
@@ -315,7 +337,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -414,7 +436,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeTosh;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -441,7 +463,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeTosh;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -458,7 +480,7 @@
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeToshTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -475,7 +497,7 @@
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeToshTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -490,7 +512,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeToshUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -505,7 +527,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.coffeetosh.CoffeeToshUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -556,9 +578,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		FFAF95872F57563B000A447A /* XCLocalSwiftPackageReference "../../Coffeetosh" */ = {
+		FFAF95872F57563B000A447A /* XCLocalSwiftPackageReference "../../Coffetosh" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Coffeetosh;
+			relativePath = ../../Coffetosh;
 		};
 /* End XCLocalSwiftPackageReference section */
 

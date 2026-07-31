@@ -42,6 +42,44 @@ final class StatusBarManager: NSObject {
         UserDefaults.standard.integer(forKey: "presetDurationSeconds")
     }
     private var hasPreset: Bool { !presetMode.isEmpty }
+    private var isStarting = false
+    private var lastStartFailure: Date?
+
+    private func startHeadlessSession(durationSeconds: Int) {
+        let pendingStatus = CoffeetoshStatus(
+            active: true,
+            mode: .headless,
+            startTime: Date(),
+            durationSeconds: durationSeconds
+        )
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            guard SleepManager.shared.preActivateModeBAdmin(useSudo: false) else {
+                DispatchQueue.main.async {
+                    self.isStarting = false
+                    self.lastStartFailure = Date()
+                    self.openPopover()
+                }
+                return
+            }
+            try? StatusFileManager.write(pendingStatus)
+            guard DaemonLauncher.launch() != nil else {
+                try? StatusFileManager.markInactive()
+                _ = ShellHelper.runWithAdmin("pmset -a disablesleep 0")
+                DispatchQueue.main.async {
+                    self.isStarting = false
+                    self.lastStartFailure = Date()
+                    self.openPopover()
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                self.isStarting = false
+                self.appState.status = (try? StatusFileManager.read()) ?? pendingStatus
+            }
+        }
+    }
 
     // MARK: - Init
 
@@ -155,36 +193,31 @@ final class StatusBarManager: NSObject {
             }
         } else {
             // ── START ─────────────────────────────────────────────────────────
+            guard !isStarting else { return }
+            isStarting = true
             let mode: CoffeetoshMode = presetMode == "headless" ? .headless : .keepAwake
             let dur  = presetDurationSeconds
 
             if mode == .keepAwake {
-                // Mode A (IOKit): no dialog, safe to call synchronously on
-                // .leftMouseDown — no event-loop conflict whatsoever.
-                let activated = SleepManager.shared.activate(mode: mode,
-                                                              durationSeconds: dur,
-                                                              skipAdmin: false)
-                if activated {
-                    appState.status.active = true
-                    updateIconForActiveState(true)
+                // Keep the status-item event loop responsive while activation
+                // persists state and starts the assertion.
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    let activated = SleepManager.shared.activate(mode: mode,
+                                                                  durationSeconds: dur,
+                                                                  skipAdmin: false)
+                    guard activated, let self else { return }
+                    DispatchQueue.main.async {
+                        self.isStarting = false
+                        self.appState.status = (try? StatusFileManager.read()) ?? self.appState.status
+                        self.updateIconForActiveState(true)
+                    }
                 }
             } else {
                 // Mode B (Headless): dispatch to a background thread so the
                 // admin authentication dialog (SecurityAgent) can be shown and
                 // interacted with.  Blocking the main thread prevents the dialog
                 // from receiving key events, so the password prompt never works.
-                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                    guard let self else { return }
-                    let activated = SleepManager.shared.activate(mode: mode,
-                                                                  durationSeconds: dur,
-                                                                  skipAdmin: false)
-                    if activated {
-                        DispatchQueue.main.async {
-                            self.appState.status.active = true
-                            self.updateIconForActiveState(true)
-                        }
-                    }
-                }
+                startHeadlessSession(durationSeconds: dur)
             }
         }
     }
