@@ -32,6 +32,24 @@ final class CoffeeToshUITests: XCTestCase {
     }
 
     @MainActor
+    func testRemoteControlTabShowsHostSurface() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let remoteTab = app.buttons["Remote Control"]
+        XCTAssertTrue(remoteTab.waitForExistence(timeout: 5))
+        remoteTab.click()
+
+        XCTAssertTrue(app.staticTexts["THIS MAC"].waitForExistence(timeout: 5))
+        let addDevice = app.buttons["Add Device"]
+        XCTAssertTrue(addDevice.waitForExistence(timeout: 5))
+        addDevice.firstMatch.click()
+
+        XCTAssertTrue(app.staticTexts["Waiting for your device"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["CONFIRMATION PHRASE"].waitForExistence(timeout: 5))
+        app.buttons["Cancel"].firstMatch.click()
+    }
+
     func testLaunchPerformance() throws {
         // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {

@@ -15,10 +15,14 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
+    let remoteControlStore = RemoteControlStore()
     private(set) var statusBarManager: StatusBarManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        statusBarManager = StatusBarManager(appState: appState)
+        statusBarManager = StatusBarManager(
+            appState: appState,
+            remoteControlStore: remoteControlStore
+        )
 
         // Orphan cleanup: if a previous GUI session crashed without restoring system
         // state (no daemon means no crash recovery), clean it up now.
@@ -90,6 +94,7 @@ struct CoffeeToshApp: App {
         WindowGroup(id: "Dashboard") {
             DashboardView()
                 .environmentObject(appDelegate.appState)
+                .environmentObject(appDelegate.remoteControlStore)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)   // locks to exact content frame = non-resizable

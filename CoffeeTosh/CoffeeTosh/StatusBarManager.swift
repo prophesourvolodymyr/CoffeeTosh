@@ -16,6 +16,7 @@ final class StatusBarManager: NSObject {
     private var statusItem: NSStatusItem!
     private let popover = NSPopover()
     private let appState: AppState
+    private let remoteControlStore: RemoteControlStore
     private var cancellables = Set<AnyCancellable>()
 
     // Multi-click confusion detection
@@ -83,8 +84,9 @@ final class StatusBarManager: NSObject {
 
     // MARK: - Init
 
-    init(appState: AppState) {
+    init(appState: AppState, remoteControlStore: RemoteControlStore) {
         self.appState = appState
+        self.remoteControlStore = remoteControlStore
         super.init()
         setupStatusItem()
         setupPopover()
@@ -106,6 +108,12 @@ final class StatusBarManager: NSObject {
                 if newStatus.lidOpenedDuringSession == true && !(self?.popover.isShown ?? false) {
                     self?.openPopover()
                 }
+            }
+            .store(in: &cancellables)
+        remoteControlStore.$hostState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.updateIcon()
             }
             .store(in: &cancellables)
     }
@@ -147,7 +155,9 @@ final class StatusBarManager: NSObject {
         popover.behavior  = .transient
         popover.animates  = true
         popover.contentSize = NSSize(width: 280, height: 400)
-        let content = ContentView().environmentObject(appState)
+        let content = ContentView()
+            .environmentObject(appState)
+            .environmentObject(remoteControlStore)
         popover.contentViewController = NSHostingController(rootView: content)
     }
 
@@ -185,7 +195,7 @@ final class StatusBarManager: NSObject {
             // Optimistic immediate update so the icon flips without waiting
             // for the FileSystemWatcher round-trip (~200 ms).
             appState.status = .inactive
-            updateIconForActiveState(false)
+            updateIconForActiveState(false, remoteActive: remoteControlStore.hostState == .connected)
             // Restore runs on a background thread — SleepManager.restore() may
             // call ShellHelper.run() which blocks via Process.waitUntilExit().
             DispatchQueue.global(qos: .userInitiated).async {
@@ -209,7 +219,10 @@ final class StatusBarManager: NSObject {
                     DispatchQueue.main.async {
                         self.isStarting = false
                         self.appState.status = (try? StatusFileManager.read()) ?? self.appState.status
-                        self.updateIconForActiveState(true)
+                        self.updateIconForActiveState(
+                            true,
+                            remoteActive: self.remoteControlStore.hostState == .connected
+                        )
                     }
                 }
             } else {
@@ -250,46 +263,50 @@ final class StatusBarManager: NSObject {
     // MARK: - Icon
 
     func updateIcon() {
-        updateIconForActiveState(appState.status.active)
+        updateIconForActiveState(
+            appState.status.active,
+            remoteActive: remoteControlStore.hostState == .connected
+        )
     }
 
-    private func updateIconForActiveState(_ isActive: Bool) {
+    private func updateIconForActiveState(_ isActive: Bool, remoteActive: Bool = false) {
         guard let button = statusItem.button else { return }
         statusItem.isVisible = true
 
-        let catalogName = isActive ? "logo-filled" : "logo-outline"
-        let symbolName  = isActive ? "cup.and.saucer.fill" : "cup.and.saucer"
+        let visibleActive = isActive || remoteActive
+        let catalogName = visibleActive ? "logo-filled" : "logo-outline"
+        let symbolName  = visibleActive ? "cup.and.saucer.fill" : "cup.and.saucer"
 
-        // Use .copy() so we never mutate the shared NSImage name-cache entry.
-        // Without copy(), setting isTemplate on the cached image can corrupt
-        // subsequent lookups by the same name.
         if let img = NSImage(named: catalogName)?.copy() as? NSImage {
             img.isTemplate = true
             img.size = NSSize(width: 28, height: 24)
-            button.image   = img
+            button.image = img
         } else if let sym = NSImage(systemSymbolName: symbolName,
                                     accessibilityDescription: catalogName) {
             sym.isTemplate = true
-            button.image   = sym
+            button.image = sym
         } else {
             let fallback = NSApp.applicationIconImage.copy() as! NSImage
             fallback.isTemplate = true
             button.image = fallback
         }
 
-        // Bug #11: inline countdown text — only shown when active + user enabled it.
+        button.toolTip = remoteActive
+            ? "Coffeetosh — Remote connection active"
+            : "Coffeetosh"
+
         let showTimer = isActive && UserDefaults.standard.bool(forKey: "showInlineTimer")
+        var title = remoteActive ? " •" : ""
         if showTimer, let secs = appState.status.remainingSeconds {
             let h = secs / 3600
             let m = (secs % 3600) / 60
-            button.title = h > 0 ? " \(h)h\(m > 0 ? "\(m)m" : "")" : " \(m)m"
+            title += h > 0 ? " \(h)h\(m > 0 ? "\(m)m" : "")" : " \(m)m"
             button.imagePosition = .imageLeft
         } else if showTimer && appState.status.durationSeconds == 0 {
-            button.title = " ∞"
+            title += " ∞"
             button.imagePosition = .imageLeft
-        } else {
-            button.title = ""
         }
+        button.title = title
     }
 
     // MARK: - Inline Icon Timer

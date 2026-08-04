@@ -39,6 +39,7 @@ struct DashboardView: View {
 // Complete Analytics & Dashboard View
 struct MainDashboardView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var remoteControlStore: RemoteControlStore
     @State private var history: [SessionHistoryItem] = []
     @State private var stats: HistoryStats = HistoryStats(totalSessions: 0, totalHoursPrevented: 0, keepAwakePercent: 0, headlessPercent: 0)
     @State private var selectedTab = "Analytics"
@@ -50,6 +51,7 @@ struct MainDashboardView: View {
     // Badge "seen" flags — show badge until user visits the tab once
     @AppStorage("seenPresetTab")   private var seenPresetTab   = false
     @AppStorage("seenSettingsTab") private var seenSettingsTab = false
+    @AppStorage("seenRemoteTab")   private var seenRemoteTab   = false
 
     var body: some View {
         HStack(spacing: 0) {
@@ -73,6 +75,12 @@ struct MainDashboardView: View {
                               showBadge: !seenPresetTab) {
                     seenPresetTab = true
                     selectedTab = "Preset"
+                }
+
+                SidebarButton(title: "Remote Control", icon: "rectangle.connected.to.line.below", isSelected: selectedTab == "Remote Control",
+                              showBadge: !seenRemoteTab) {
+                    seenRemoteTab = true
+                    selectedTab = "Remote Control"
                 }
 
                 SidebarButton(title: "Settings", icon: "gearshape.fill", isSelected: selectedTab == "Settings",
@@ -103,6 +111,8 @@ struct MainDashboardView: View {
                 CLIGuideView()
             } else if selectedTab == "Preset" {
                 DashboardPresetView()
+            } else if selectedTab == "Remote Control" {
+                RemoteDevicesView(store: remoteControlStore)
             } else if selectedTab == "Settings" {
                 DashboardSettingsView()
             } else {
@@ -1207,11 +1217,79 @@ struct DashboardSettingsView: View {
     @AppStorage("showInlineTimer")       private var showInlineTimer = true
     @AppStorage("lowPowerMode")          private var lowPowerMode = false
 
+    @EnvironmentObject var remoteControlStore: RemoteControlStore
+    @State private var showRemoteControl = false
     var body: some View {
+        Group {
+        if showRemoteControl {
+            VStack(alignment: .leading, spacing: 18) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showRemoteControl = false
+                    }
+                } label: {
+                    Label("Settings", systemImage: "chevron.left")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(textSecondary)
+                }
+                .buttonStyle(.plain)
+
+                RemoteControlView(store: remoteControlStore)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .padding(30)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        } else {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
                 Text("Settings")
                     .font(.system(size: 28, weight: .bold))
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "iphone.gen3")
+                            .font(.system(size: 21, weight: .medium))
+                            .foregroundStyle(warmAmber)
+                            .frame(width: 34, height: 34)
+                            .background(Circle().fill(warmAmber.opacity(0.12)))
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Remote Control")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(textPrimary)
+                            Text("Connect an iPhone or iPad to view and control this Mac.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(textSecondary)
+                        }
+
+                        Spacer()
+
+                        Button("Open") {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                showRemoteControl = true
+                            }
+                        }
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(popoverBase)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Capsule().fill(warmAmber))
+                        .buttonStyle(.plain)
+                    }
+
+                    Text("Remote viewing starts only after you approve the connection.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(textSecondary)
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(warmAmber.opacity(0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(warmAmber.opacity(0.28), lineWidth: 1)
+                        )
+                )
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("General")
@@ -1272,6 +1350,8 @@ struct DashboardSettingsView: View {
             }
             .padding(30)
         }
+        }
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
             // Sync toggle to reflect the true SMAppService registration state
@@ -1308,6 +1388,7 @@ struct DashboardToggleRow: View {
 #Preview("Dashboard Main") {
     MainDashboardView()
         .environmentObject(AppState())
+        .environmentObject(RemoteControlStore())
 }
 
 #Preview("Onboarding") {

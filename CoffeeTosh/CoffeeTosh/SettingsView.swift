@@ -6,6 +6,7 @@ struct SettingsView: View {
     /// Provided when shown as an overlay inside ContentView (dismiss env doesn't reach overlays).
     var onBack: (() -> Void)? = nil
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var remoteControlStore: RemoteControlStore
 
     // Preset
     @AppStorage("presetMode")            private var presetMode: String = ""
@@ -21,13 +22,23 @@ struct SettingsView: View {
     // Temporary selection state for the preset picker (mirrors stored values)
     @State private var draftMode: String = ""
     @State private var draftDuration: Int = 0
+    @State private var showingRemoteControl = false
     
     var body: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
                 Button(action: {
-                    if let onBack { onBack() } else { dismiss() }
+                    if showingRemoteControl {
+                        remoteControlStore.cancelPairing()
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showingRemoteControl = false
+                        }
+                    } else if let onBack {
+                        onBack()
+                    } else {
+                        dismiss()
+                    }
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 14, weight: .semibold))
@@ -38,7 +49,7 @@ struct SettingsView: View {
                 
                 Spacer()
                 
-                Text("Settings")
+                Text(showingRemoteControl ? "Remote Control" : "Settings")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(textPrimary)
                 
@@ -55,6 +66,9 @@ struct SettingsView: View {
             Divider()
                 .background(textSecondary.opacity(0.3))
             
+            if showingRemoteControl {
+                RemoteControlView(store: remoteControlStore)
+            } else {
             // Settings List
             ScrollView {
                 VStack(spacing: 16) {
@@ -120,6 +134,47 @@ struct SettingsView: View {
                         )
                     }
                     
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("REMOTE")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(textSecondary)
+                            .padding(.leading, 12)
+                            .padding(.bottom, 6)
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                showingRemoteControl = true
+                            }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "iphone.gen3")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(warmAmber)
+                                    .frame(width: 20)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Remote Control")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(textPrimary)
+                                    Text(remoteControlStore.hostState.title)
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundStyle(textSecondary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(textSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 11)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(cardSection))
+                    }
+
                     // Group 3: App
                     VStack(alignment: .leading, spacing: 1) {
                         Text("APP")
@@ -157,6 +212,7 @@ struct SettingsView: View {
                                         presetDurationSeconds: $presetDurationSeconds)
                 }
                 .padding(20)
+            }
             }
         }
         .frame(width: 280, height: 400)
@@ -335,5 +391,6 @@ struct SettingsToggleRow: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(RemoteControlStore())
 }
 
