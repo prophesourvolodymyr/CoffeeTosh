@@ -159,6 +159,7 @@
           }
         }
       }
+      window.remoteMacBookSetReducedMotion = setReducedMotion;
       reducedMotionQuery.addEventListener?.('change', event => setReducedMotion(event.matches));
 
       function updatePointer(clientX, clientY) {
