@@ -32,25 +32,25 @@ enum RemoteHostState: String, Codable, CaseIterable {
     var detail: String {
         switch self {
         case .notSetUp:
-            return "Add an iPhone or iPad to view and control this Mac."
+            return "Pair a device to access this Mac."
         case .waitingForPhone:
-            return "Waiting for an iPhone or iPad to scan the pairing code."
+            return "Waiting for device."
         case .pairingRequest:
-            return "Review the device before it becomes trusted."
+            return "Review connection."
         case .ready:
-            return "This Mac is ready for an approved device."
+            return "Ready for an approved device."
         case .connected:
-            return "Remote viewing is active on this Mac."
+            return "Remote viewing active."
         case .paused:
-            return "The connected device is temporarily unavailable."
+            return "Device temporarily unavailable."
         case .permissionNeeded:
-            return "Mac permission is needed before remote viewing can start."
+            return "Screen Recording permission required."
         case .hostUnavailable:
-            return "Remote Control is unavailable right now."
+            return "Remote Control unavailable."
         case .rejected:
-            return "The last connection request was declined."
+            return "Connection request declined."
         case .removed:
-            return "The device is no longer trusted by this Mac."
+            return "Device no longer trusted."
         }
     }
 
@@ -149,9 +149,11 @@ struct PairedRemoteDevice: Identifiable, Codable, Equatable {
     var lastConnected: Date?
     var state: RemoteDeviceState
     var platform: RemoteDevicePlatform
+    var peerName: String?
+    var hostToken: String?
 
     private enum CodingKeys: String, CodingKey {
-        case id, displayName, modelName, lastConnected, state, platform
+        case id, displayName, modelName, lastConnected, state, platform, peerName, hostToken
     }
 
     init(
@@ -160,7 +162,9 @@ struct PairedRemoteDevice: Identifiable, Codable, Equatable {
         modelName: String,
         lastConnected: Date?,
         state: RemoteDeviceState,
-        platform: RemoteDevicePlatform
+        platform: RemoteDevicePlatform,
+        peerName: String? = nil,
+        hostToken: String? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -168,6 +172,8 @@ struct PairedRemoteDevice: Identifiable, Codable, Equatable {
         self.lastConnected = lastConnected
         self.state = state
         self.platform = platform
+        self.peerName = peerName
+        self.hostToken = hostToken
     }
 
     init(from decoder: Decoder) throws {
@@ -179,6 +185,8 @@ struct PairedRemoteDevice: Identifiable, Codable, Equatable {
         state = try container.decode(RemoteDeviceState.self, forKey: .state)
         platform = try container.decodeIfPresent(RemoteDevicePlatform.self, forKey: .platform)
             ?? .inferred(from: modelName)
+        peerName = try container.decodeIfPresent(String.self, forKey: .peerName)
+        hostToken = try container.decodeIfPresent(String.self, forKey: .hostToken)
     }
 }
 
@@ -214,7 +222,30 @@ struct RemotePairingRequest: Identifiable, Equatable {
     let platform: RemoteDevicePlatform
     let confirmationPhrase: String
     let receivedAt: Date
+    let peerName: String?
+    let hostToken: String?
+
+    init(
+        id: UUID = UUID(),
+        displayName: String,
+        modelName: String,
+        platform: RemoteDevicePlatform,
+        confirmationPhrase: String,
+        receivedAt: Date = Date(),
+        peerName: String? = nil,
+        hostToken: String? = nil
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.modelName = modelName
+        self.platform = platform
+        self.confirmationPhrase = confirmationPhrase
+        self.receivedAt = receivedAt
+        self.peerName = peerName
+        self.hostToken = hostToken
+    }
 }
+
 
 struct RemoteSession: Identifiable, Equatable {
     let id: UUID
@@ -267,6 +298,9 @@ final class RemoteControlStore: ObservableObject {
         )
 
         self.invitation = invitation
+    var onPairingStateChanged: (() -> Void)?
+    var onPairingDecision: ((UUID, Bool, String?) -> Void)?
+    var onRemoteSessionEnded: ((UUID) -> Void)?
         pendingRequest = nil
         lastMessage = nil
         hostState = .waitingForPhone

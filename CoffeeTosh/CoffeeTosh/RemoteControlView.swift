@@ -41,6 +41,18 @@ struct RemoteControlView: View {
     @ViewBuilder
     private var overviewContent: some View {
         VStack(alignment: .leading, spacing: 14) {
+            RemoteMacBook3DView()
+                .frame(maxWidth: .infinity)
+                .frame(height: 172)
+                .background(cardSection.opacity(0.55))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(warmAmber.opacity(0.16), lineWidth: 1)
+                )
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Interactive MacBook. Click to close or open the lid.")
+
             HStack(spacing: 10) {
                 Image("logo-filled")
                     .resizable()
@@ -52,19 +64,14 @@ struct RemoteControlView: View {
                     Text("Remote Control")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(textPrimary)
-                    Text("A trusted window into this Mac")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(textSecondary)
                 }
 
                 Spacer(minLength: 0)
             }
 
-            Text("View and control this Mac from an approved iPhone or iPad. Remote viewing starts only after you allow the connection.")
-                .font(.system(size: 12, weight: .regular))
+            Text("Pair a device to access this Mac.")
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
             hostStatusCard
 
             if let invitation = store.invitation {
@@ -93,7 +100,7 @@ struct RemoteControlView: View {
                 }
             } label: {
                 HStack {
-                    Label("Manage Paired Devices", systemImage: "ipad.and.iphone")
+                    Label("Manage Devices", systemImage: "ipad.and.iphone")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(textPrimary)
                     Spacer()
@@ -115,7 +122,7 @@ struct RemoteControlView: View {
             if !store.devices.isEmpty {
                 deviceSummary
             } else if store.hostState == .notSetUp {
-                Text("No iPhone or iPad is paired with this Mac yet.")
+                Text("No paired devices yet.")
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(textSecondary)
             }
@@ -156,10 +163,9 @@ struct RemoteControlView: View {
                     .foregroundStyle(warmAmber)
             }
 
-            Text("Only one iPhone or iPad can control this Mac at a time. Removing a device changes trust and requires pairing again.")
+            Text("One device controls this Mac at a time.")
                 .font(.system(size: 11, weight: .regular))
                 .foregroundStyle(textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
 
             if store.devices.isEmpty {
                 VStack(spacing: 10) {
@@ -169,7 +175,7 @@ struct RemoteControlView: View {
                     Text("No paired devices")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(textPrimary)
-                    Text("Add an iPhone or iPad to manage it here.")
+                    Text("Pair an iPhone or iPad.")
                         .font(.system(size: 11))
                         .foregroundStyle(textSecondary)
                     Button("Add a device") {
@@ -261,13 +267,12 @@ struct RemoteControlView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 142)
 
-            Text("Open Coffeetosh Remote on your iPhone or iPad and choose this Mac.")
+            Text("Scan with Coffeetosh Remote.")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("CONFIRMATION PHRASE")
+                Text("PHRASE")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(textSecondary)
                 Text(invitation.confirmationPhrase)
@@ -308,10 +313,9 @@ struct RemoteControlView: View {
                 }
             }
 
-            Text("Allow this device to become trusted by Coffeetosh? Remote viewing will not begin until a separate connection is made.")
+            Text("Allow remote access from this device?")
                 .font(.system(size: 11))
                 .foregroundStyle(textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
 
             Text(request.confirmationPhrase)
                 .font(.system(size: 12, weight: .bold, design: .monospaced))
@@ -381,7 +385,7 @@ struct RemoteControlView: View {
     private var deviceSummary: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack {
-                Text("PAIRED DEVICES")
+                Text("DEVICES")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(textSecondary)
                 Spacer()
@@ -410,10 +414,9 @@ struct RemoteControlView: View {
     }
 
     private var privacyStatement: some View {
-        Label("Remote viewing begins only after you approve the connection.", systemImage: "lock.shield")
+        Label("Approval required.", systemImage: "lock.shield")
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(textSecondary)
-            .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
@@ -431,7 +434,7 @@ struct RemoteControlView: View {
         case .available:
             return store.hostState.detail
         case .permissionNeeded:
-            return "Allow Screen Recording so an approved iPhone or iPad can view this Mac."
+            return "Screen Recording permission required."
         case .unavailable(let reason):
             return reason
         }

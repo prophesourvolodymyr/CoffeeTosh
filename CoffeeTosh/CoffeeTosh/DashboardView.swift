@@ -1257,7 +1257,7 @@ struct DashboardSettingsView: View {
                             Text("Remote Control")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(textPrimary)
-                            Text("Connect an iPhone or iPad to view and control this Mac.")
+                            Text("Pair a device to view this Mac.")
                                 .font(.system(size: 12))
                                 .foregroundStyle(textSecondary)
                         }
@@ -1277,7 +1277,7 @@ struct DashboardSettingsView: View {
                         .buttonStyle(.plain)
                     }
 
-                    Text("Remote viewing starts only after you approve the connection.")
+                    Text("Approval required.")
                         .font(.system(size: 11))
                         .foregroundStyle(textSecondary)
                 }
