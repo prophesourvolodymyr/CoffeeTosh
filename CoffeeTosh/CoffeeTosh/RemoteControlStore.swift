@@ -298,9 +298,6 @@ final class RemoteControlStore: ObservableObject {
         )
 
         self.invitation = invitation
-    var onPairingStateChanged: (() -> Void)?
-    var onPairingDecision: ((UUID, Bool, String?) -> Void)?
-    var onRemoteSessionEnded: ((UUID) -> Void)?
         pendingRequest = nil
         lastMessage = nil
         hostState = .waitingForPhone
