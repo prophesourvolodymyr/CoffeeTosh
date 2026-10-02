@@ -218,3 +218,17 @@
 - [x] Coffeetosh logo removed from counter composition
 - [x] Counter digits restyled to match the website visual language
 - [x] Homepage JS revalidated after counter restyle
+
+---
+
+## Website Motion Update — 2026-10-02
+
+The hero heading now reveals through staggered line masks instead of bouncing individual words. Home, Download, and Docs share a locally hosted Lenis scroll controller, including anchor navigation and the existing feature-tour buttons.
+
+The extracted hero device scene uses attached amber connection curves with traveling pulses, an eased model entrance, and a reversible scroll fade. The feature-section indicator contains only its progress bar; its numbers and Scroll label are removed.
+
+The footer coffee edge now uses a bounded canvas simulation with growing drops, narrowing necks, pinch-off, gravity, smaller satellite drops, reflective shading, and damped shape recovery. It pauses outside the viewport and becomes static under reduced motion; the SVG remains the fallback.
+
+Mobile homepage navigation and grid sizing were corrected after the browser check exposed wrapping and horizontal overflow. Desktop and mobile browser checks covered the new presentation, feature-tour navigation, smooth wheel scrolling, anchor positioning, model fading, liquid movement, and reduced-motion fallback.
+
+These changes are implemented; human acceptance is not recorded. This main branch still uses the legacy website progress document. The separate feature branch's CYCLES.md and documentation migration remain untouched.
