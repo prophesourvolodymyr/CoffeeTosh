@@ -319,18 +319,6 @@
     const phoneRight = createPhone(phoneXOffset, phoneRightY, phoneRightZ, -0.25, -0.06, 0.06, terminalRight);
     masterGroup.add(phoneLeft, phoneRight);
 
-    const attachmentGeometry = new THREE.SphereGeometry(0.022, 12, 8);
-    const attachmentMaterialLeft = new THREE.MeshBasicMaterial({
-      color: 0xf0b45d, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false
-    });
-    const attachmentMaterialRight = attachmentMaterialLeft.clone();
-    const phoneAttachmentLeft = new THREE.Mesh(attachmentGeometry, attachmentMaterialLeft);
-    const phoneAttachmentRight = new THREE.Mesh(attachmentGeometry, attachmentMaterialRight);
-    phoneAttachmentLeft.position.set(0, phoneBottom - 0.006, 0.024);
-    phoneAttachmentRight.position.set(0, phoneBottom - 0.006, 0.024);
-    phoneLeft.add(phoneAttachmentLeft);
-    phoneRight.add(phoneAttachmentRight);
-
     let phoneRevealLeft = 0;
     let phoneRevealRight = 0;
     let phoneVisibleScale = isMobile ? 0.72 : 1;
@@ -351,74 +339,17 @@
       phoneRight.updateMatrix();
     }
 
-    /* Link meshes use actual 3D tubes. LineDashedMaterial linewidth is not portable. */
-    const LINK_SEGMENTS = 64;
-    const LINK_COLOR = new THREE.Color(0xd4923a);
-    const LINK_HALO_COLOR = new THREE.Color(0xf0b45d);
-    const linkVertexShader = [
-      'varying vec2 vUv;',
-      'uniform vec3 uStartShift;',
-      'void main() {',
-      '  vUv = uv;',
-      '  vec3 point = position + uStartShift * (1.0 - uv.x);',
-      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(point, 1.0);',
-      '}'
-    ].join('\n');
-    const linkFragmentShader = [
-      'uniform vec3 uColor;',
-      'uniform float uOpacity;',
-      'uniform float uReveal;',
-      'uniform float uTime;',
-      'uniform float uReduced;',
-      'uniform float uHalo;',
-      'varying vec2 vUv;',
-      'void main() {',
-      '  float head = smoothstep(0.0, 0.085, uReveal * 1.085 - vUv.x);',
-      '  float flow = mix(0.65 + 0.35 * pow(0.5 + 0.5 * sin(vUv.x * 25.13 - uTime * 3.2), 6.0), 1.0, uReduced);',
-      '  float alpha = head * uOpacity * flow;',
-      '  if (uHalo > 0.5) alpha *= 0.25;',
-      '  gl_FragColor = vec4(uColor, alpha);',
-      '}'
-    ].join('\n');
-
-    function createLinkMaterial(color, opacity, halo) {
-      return new THREE.ShaderMaterial({
-        uniforms: {
-          uStartShift: { value: new THREE.Vector3() },
-          uColor: { value: color.clone() },
-          uOpacity: { value: opacity },
-          uReveal: { value: 0 },
-          uTime: { value: 0 },
-          uReduced: { value: reducedMotion ? 1 : 0 },
-          uHalo: { value: halo ? 1 : 0 }
-        },
-        vertexShader: linkVertexShader,
-        fragmentShader: linkFragmentShader,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.FrontSide,
-        blending: halo ? THREE.AdditiveBlending : THREE.NormalBlending,
-        toneMapped: false
-      });
-    }
+    const LINK_SEGMENTS = 120;
 
     let lineLeft = null;
     let lineRight = null;
     let bodyBounds = null;
-    let linkEndLeft = null;
-    let linkEndRight = null;
 
     function disposeLink(link) {
       if (!link) return;
-      masterGroup.remove(link.mesh, link.halo, link.packet, link.endCap);
+      masterGroup.remove(link.mesh);
       link.mesh.geometry.dispose();
-      link.halo.geometry.dispose();
       link.mesh.material.dispose();
-      link.halo.material.dispose();
-      link.packet.geometry.dispose();
-      link.packet.material.dispose();
-      link.endCap.geometry.dispose();
-      link.endCap.material.dispose();
     }
 
     function phoneAnchorLocal(phone) {
@@ -432,66 +363,40 @@
     }
 
     function makeLink(start, end, side) {
-      const curveStart = start.clone();
-      const curveEnd = end.clone();
-      const direction = end.clone().sub(start);
-      const normal = new THREE.Vector3(-direction.y, direction.x, 0).normalize();
-      const amplitude = THREE.MathUtils.clamp(direction.length() * 0.2, 0.045, 0.13);
-      const points = [curveStart];
-      for (let index = 0; index < 4; index += 1) {
-        const progress = 0.18 + index * 0.21;
-        const offset = (index % 2 === 0 ? 1 : -1) * side * amplitude;
-        points.push(start.clone().lerp(end, progress).addScaledVector(normal, offset));
-      }
-      points.push(curveEnd);
-      const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.35);
-      const radius = isMobile ? 0.0045 : 0.004;
-      const tube = new THREE.TubeGeometry(curve, LINK_SEGMENTS, radius, 7, false);
-      const haloTube = new THREE.TubeGeometry(curve, LINK_SEGMENTS, radius * 2.6, 7, false);
-      const material = createLinkMaterial(LINK_COLOR, 0.84, false);
-      const haloMaterial = createLinkMaterial(LINK_HALO_COLOR, 0.32, true);
-      const mesh = new THREE.Mesh(tube, material);
-      const halo = new THREE.Mesh(haloTube, haloMaterial);
-      mesh.renderOrder = 4;
-      halo.renderOrder = 3;
-      const packet = new THREE.Mesh(
-        new THREE.SphereGeometry(radius * 2.8, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffce82, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
-      );
-      packet.renderOrder = 6;
-      const endCap = new THREE.Mesh(
-        new THREE.SphereGeometry(radius * 1.5, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xf0b45d, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
-      );
-      endCap.position.copy(end);
-      endCap.renderOrder = 5;
-      masterGroup.add(mesh, halo, packet, endCap);
-      const link = {
-        curve: curve,
-        mesh: mesh,
-        halo: halo,
-        packet: packet,
-        endCap: endCap,
-        progress: 0,
-        offset: side < 0 ? 0 : 0.47,
-        packetPoint: new THREE.Vector3(),
+      const dip = isMobile ? -0.45 : -0.9;
+      const arcX = isMobile ? 0.25 : 0.5;
+      const arcY = isMobile ? -0.3 : -0.6;
+      const zPull = isMobile ? 0.3 : 0.6;
+      const control1 = new THREE.Vector3(side * (phoneXOffset + 0.05), dip, end.z - zPull);
+      const control2 = new THREE.Vector3(end.x + side * arcX, bodyBounds.max.y + arcY, end.z - zPull * 0.4);
+      const curve = new THREE.CubicBezierCurve3(start, control1, control2, end);
+      const points = curve.getPoints(LINK_SEGMENTS);
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineDashedMaterial({
+        color: 0xd4923a, dashSize: 0.06, gapSize: 0.03,
+        transparent: true, opacity: 0, linewidth: 2
+      });
+      const mesh = new THREE.Line(geometry, material);
+      mesh.computeLineDistances();
+      geometry.setDrawRange(0, 0);
+      masterGroup.add(mesh);
+      return {
+        mesh,
+        points,
+        start,
         phone: side < 0 ? phoneLeft : phoneRight,
         anchorShift: new THREE.Vector3(),
-        start: curveStart,
-        end: curveEnd
+        scale: -1
       };
-      return link;
     }
 
     function buildLinks() {
       if (!bodyBounds) return;
       if (lineLeft) disposeLink(lineLeft);
       if (lineRight) disposeLink(lineRight);
-      const bodyWidth = bodyBounds.max.x - bodyBounds.min.x;
       const bodyMidZ = (bodyBounds.min.z + bodyBounds.max.z) * 0.5;
-      const sideInset = Math.min(0.075, bodyWidth * 0.045);
-      linkEndLeft = new THREE.Vector3(bodyBounds.min.x + sideInset, bodyBounds.max.y + 0.018, bodyMidZ + 0.012);
-      linkEndRight = new THREE.Vector3(bodyBounds.max.x - sideInset, bodyBounds.max.y + 0.018, bodyMidZ + 0.012);
+      const linkEndLeft = new THREE.Vector3(bodyBounds.min.x, bodyBounds.max.y + 0.01, bodyMidZ);
+      const linkEndRight = new THREE.Vector3(bodyBounds.max.x, bodyBounds.max.y + 0.01, bodyMidZ);
       const startLeft = phoneAnchorLocal(phoneLeft);
       const startRight = phoneAnchorLocal(phoneRight);
       lineLeft = makeLink(startLeft, linkEndLeft, -1);
@@ -499,35 +404,25 @@
       applyPhoneScales();
     }
 
-    function applyLinkProgress(link, phoneProgress, elapsed) {
+    function applyLinkProgress(link, phoneProgress) {
       if (!link) return;
-      link.anchorShift.set(0, phoneBottom, 0).applyMatrix4(link.phone.matrix).sub(link.start);
-      link.mesh.material.uniforms.uStartShift.value.copy(link.anchorShift);
-      link.halo.material.uniforms.uStartShift.value.copy(link.anchorShift);
-      const reveal = reducedMotion ? 1 : THREE.MathUtils.clamp((phoneProgress - 0.70) / 0.30, 0, 1);
-      link.progress = reveal;
-      link.mesh.material.uniforms.uReveal.value = reveal;
-      link.halo.material.uniforms.uReveal.value = reveal;
-      link.mesh.material.uniforms.uTime.value = elapsed;
-      link.halo.material.uniforms.uTime.value = elapsed;
-      link.mesh.material.uniforms.uReduced.value = reducedMotion ? 1 : 0;
-      link.halo.material.uniforms.uReduced.value = reducedMotion ? 1 : 0;
-      const opacity = reducedMotion ? 0.74 : reveal * 0.84;
-      const haloOpacity = reducedMotion ? 0.28 : reveal * 0.31;
-      link.mesh.material.uniforms.uOpacity.value = opacity;
-      link.halo.material.uniforms.uOpacity.value = haloOpacity;
-      link.packet.material.opacity = reducedMotion ? 0 : reveal * (0.50 + 0.18 * Math.sin(elapsed * 4.0 + link.offset));
-      link.endCap.material.opacity = phoneProgress > 0.04 ? (reducedMotion ? 0.58 : 0.38 + phoneProgress * 0.25) : 0;
-      if (!reducedMotion && reveal > 0.01) {
-        const packetT = (elapsed * 0.17 + link.offset) % 1;
-        link.curve.getPointAt(packetT < 0 ? packetT + 1 : packetT, link.packetPoint);
-        link.packet.position.copy(link.packetPoint);
-        link.packet.position.addScaledVector(link.anchorShift, 1 - packetT);
-        link.packet.scale.setScalar(0.72 + 0.28 * Math.sin(elapsed * 5.0 + link.offset));
-        link.packet.visible = true;
-      } else {
-        link.packet.visible = false;
+      if (link.scale !== link.phone.scale.x) {
+        link.scale = link.phone.scale.x;
+        link.anchorShift.set(0, phoneBottom, 0).applyMatrix4(link.phone.matrix).sub(link.start);
+        const positions = link.mesh.geometry.attributes.position;
+        for (let index = 0; index <= LINK_SEGMENTS; index += 1) {
+          const point = link.points[index];
+          const weight = 1 - index / LINK_SEGMENTS;
+          positions.setXYZ(index,
+            point.x + link.anchorShift.x * weight,
+            point.y + link.anchorShift.y * weight,
+            point.z + link.anchorShift.z * weight);
+        }
+        positions.needsUpdate = true;
+        link.mesh.geometry.computeBoundingSphere();
       }
+      link.mesh.material.opacity = phoneProgress > 0.01 ? 0.9 : 0;
+      link.mesh.geometry.setDrawRange(0, Math.floor(phoneProgress * (LINK_SEGMENTS + 1)));
     }
 
     let lidPivot = null;
@@ -727,8 +622,8 @@
         terminalLeft.showStatic();
         terminalRight.showStatic();
         applyPhoneScales();
-        if (lineLeft) applyLinkProgress(lineLeft, 1, 0);
-        if (lineRight) applyLinkProgress(lineRight, 1, 0);
+        if (lineLeft) applyLinkProgress(lineLeft, 1);
+        if (lineRight) applyLinkProgress(lineRight, 1);
         heroState = 'PLAYING';
         introComplete = true;
         introAlpha = 1;
@@ -844,8 +739,8 @@
       applyPhoneScales();
       const leftLinkP = lineLeft ? phoneRevealLeft : 0;
       const rightLinkP = lineRight ? phoneRevealRight : 0;
-      applyLinkProgress(lineLeft, leftLinkP, elapsed);
-      applyLinkProgress(lineRight, rightLinkP, elapsed);
+      applyLinkProgress(lineLeft, leftLinkP);
+      applyLinkProgress(lineRight, rightLinkP);
 
       if (!reducedMotion) {
         if (phoneRevealLeft > 0.3) terminalLeft.start();
@@ -950,8 +845,8 @@
         applyLidPose(1);
         terminalLeft.showStatic();
         terminalRight.showStatic();
-        if (lineLeft) applyLinkProgress(lineLeft, 1, elapsed);
-        if (lineRight) applyLinkProgress(lineRight, 1, elapsed);
+        if (lineLeft) applyLinkProgress(lineLeft, 1);
+        if (lineRight) applyLinkProgress(lineRight, 1);
       }
       setCanvasOpacity();
       startLoop();

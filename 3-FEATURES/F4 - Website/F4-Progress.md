@@ -244,3 +244,7 @@ The liquid canvas now spans the full footer independently of the wave-strip heig
 The glowing ring and dot on the closed MacBook, the glow beneath it, and the coffee-cup divider immediately below the hero button were removed at the user's request. The other section dividers remain unchanged.
 
 The phones are larger on desktop and mobile while retaining the zigzag links and attached endpoints. Camera projection now refreshes when the viewport changes. Browser checks covered desktop-to-mobile resizing, lid reopening and closing, and the reduced-motion presentation; the mobile page retained its viewport width. Human acceptance remains pending.
+
+### Original Phone Connections Restored — 2026-10-02
+
+At the user's request, the phone connections again use the original sweeping Bézier curves, amber dashes, and progressive draw-on rather than zigzag tubes, halos, and traveling beads. Endpoints account for the current phone size. The enlarged phones, removed hero decorations, and full-height footer droplets remain unchanged. Desktop, mobile, lid reopening, and reduced-motion rendering were checked in the browser without reported runtime errors; human acceptance remains pending.
