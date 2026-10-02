@@ -238,3 +238,9 @@ These changes are implemented; human acceptance is not recorded. This main branc
 The user requested more pronounced zigzag connections and reported droplets disappearing before reaching the footer bottom. Device links now follow rounded alternating bends while retaining attached endpoints and traveling pulses.
 
 The liquid canvas now spans the full footer independently of the wave-strip height. Drops retire only after leaving the bottom, and satellite drops finish independently rather than disappearing with their parent. Footer content stays above the non-interactive canvas. Desktop and mobile browser checks observed rendered drops reaching the bottom edge, preserved the 120px wave, and confirmed reduced-motion behavior and footer navigation. Human acceptance of these follow-up changes remains pending.
+
+### Hero Decoration and Phone Sizing Follow-up — 2026-10-02
+
+The glowing ring and dot on the closed MacBook, the glow beneath it, and the coffee-cup divider immediately below the hero button were removed at the user's request. The other section dividers remain unchanged.
+
+The phones are larger on desktop and mobile while retaining the zigzag links and attached endpoints. Camera projection now refreshes when the viewport changes. Browser checks covered desktop-to-mobile resizing, lid reopening and closing, and the reduced-motion presentation; the mobile page retained its viewport width. Human acceptance remains pending.

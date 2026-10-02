@@ -19,7 +19,6 @@
     if (!canvas || !container || !THREE || !THREE.GLTFLoader) return;
 
     const hero = container.closest('.hero') || container;
-    const glowRing = document.getElementById('glow-ring');
     const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reducedMotion = reducedQuery.matches;
 
@@ -334,7 +333,7 @@
 
     let phoneRevealLeft = 0;
     let phoneRevealRight = 0;
-    let phoneVisibleScale = isMobile ? 0.40 : 0.65;
+    let phoneVisibleScale = isMobile ? 0.72 : 1;
 
     function applyPhoneLayout() {
       phoneXOffset = isMobile ? 0.55 : 1.25;
@@ -342,7 +341,7 @@
       phoneRightY = isMobile ? 0.45 : 0.48;
       phoneLeft.position.set(-phoneXOffset, phoneLeftY, phoneLeftZ);
       phoneRight.position.set(phoneXOffset, phoneRightY, phoneRightZ);
-      phoneVisibleScale = isMobile ? 0.40 : 0.65;
+      phoneVisibleScale = isMobile ? 0.72 : 1;
     }
 
     function applyPhoneScales() {
@@ -531,22 +530,6 @@
       }
     }
 
-    /* Real click indicator: kept attached to the closed base, not the page overlay. */
-    const clickIndicator = new THREE.Group();
-    const indicatorRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.06, 0.075, 32),
-      new THREE.MeshBasicMaterial({ color: 0xd4923a, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
-    );
-    indicatorRing.rotation.x = -Math.PI / 2;
-    const indicatorDot = new THREE.Mesh(
-      new THREE.CircleGeometry(0.025, 24),
-      new THREE.MeshBasicMaterial({ color: 0xd4923a, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
-    );
-    indicatorDot.rotation.x = -Math.PI / 2;
-    clickIndicator.add(indicatorRing, indicatorDot);
-    clickIndicator.visible = false;
-    masterGroup.add(clickIndicator);
-
     let lidPivot = null;
     let bodyNodeRef = null;
     let lidNodeRef = null;
@@ -583,7 +566,6 @@
     let running = false;
     let isVisible = true;
     let wasVideoPlaying = false;
-    let indicatorTimer = 0;
 
     function clamp01(value) {
       return Math.max(0, Math.min(1, value));
@@ -633,10 +615,6 @@
         return;
       }
       heroState = 'CLOSED';
-      window.clearTimeout(indicatorTimer);
-      indicatorTimer = window.setTimeout(function showIndicator() {
-        if (heroState === 'CLOSED') clickIndicator.visible = true;
-      }, 800);
     }
 
     function startReopen() {
@@ -646,7 +624,6 @@
       }
       if (heroState !== 'CLOSED') return;
       heroState = 'OPENING';
-      clickIndicator.visible = false;
       if (videoReady) {
         video.currentTime = 0;
         video.pause();
@@ -734,8 +711,6 @@
           videoReady = true;
           applyVideoToScreen();
         }
-        const indicatorZ = bodyBox.max.z + 0.15;
-        clickIndicator.position.set(0, bodyBox.max.y + 0.08, indicatorZ);
         buildLinks();
       }
 
@@ -871,7 +846,6 @@
       const rightLinkP = lineRight ? phoneRevealRight : 0;
       applyLinkProgress(lineLeft, leftLinkP, elapsed);
       applyLinkProgress(lineRight, rightLinkP, elapsed);
-      if (glowRing) glowRing.style.opacity = rightLinkP > 0.01 ? (reducedMotion ? '0.7' : '0.8') : '0';
 
       if (!reducedMotion) {
         if (phoneRevealLeft > 0.3) terminalLeft.start();
@@ -893,13 +867,6 @@
         masterGroup.position.z = 0;
       }
 
-      if (clickIndicator.visible && !reducedMotion) {
-        const pulse = 0.5 + 0.5 * Math.sin(elapsed * 3.0);
-        indicatorRing.material.opacity = 0.25 + pulse * 0.35;
-        indicatorDot.material.opacity = 0.4 + pulse * 0.4;
-        const indicatorScale = 1 + pulse * 0.15;
-        indicatorRing.scale.set(indicatorScale, indicatorScale, indicatorScale);
-      }
       renderer.render(scene, camera);
     }
 
@@ -963,6 +930,7 @@
       camera.aspect = width / height || 1;
       camera.position.set(0, isMobile ? 0.6 : 0.55, isMobile ? 3.5 : 3.0);
       camera.lookAt(0, 0.24, 0);
+      camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
       updateScrollAlpha();
       if (reducedMotion) startLoop();
@@ -1000,7 +968,6 @@
       window.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       reducedQuery.removeEventListener?.('change', onReducedMotionChange);
-      window.clearTimeout(indicatorTimer);
       if (visibilityObserver) visibilityObserver.disconnect();
       if (lineLeft) disposeLink(lineLeft);
       if (lineRight) disposeLink(lineRight);
