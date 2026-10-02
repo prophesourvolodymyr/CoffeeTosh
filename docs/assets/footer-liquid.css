@@ -1,9 +1,8 @@
-/* Canvas sits over the SVG only after footer-liquid.js has initialized it. */
-.footer-wave-wrap {
+.site-footer {
   isolation: isolate;
 }
 
-.footer-wave-wrap > .footer-liquid-canvas {
+.site-footer > .footer-liquid-canvas {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -14,8 +13,13 @@
   user-select: none;
 }
 
+.site-footer > .footer-inner {
+  position: relative;
+  z-index: 2;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .footer-wave-wrap > .footer-liquid-canvas {
+  .site-footer > .footer-liquid-canvas {
     animation: none;
   }
 }

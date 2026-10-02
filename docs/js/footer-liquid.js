@@ -64,6 +64,8 @@
   function init() {
     var wrap = document.querySelector(WRAP_SELECTOR);
     if (!wrap || !window.HTMLCanvasElement) return;
+    var footer = wrap.closest('.site-footer');
+    if (!footer) return;
 
     var canvas = document.createElement('canvas');
     canvas.className = 'footer-liquid-canvas';
@@ -73,7 +75,7 @@
     var ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     if (!ctx) return;
 
-    wrap.appendChild(canvas);
+    footer.appendChild(canvas);
 
     var fallback = wrap.querySelector('svg');
     if (fallback) {
@@ -83,6 +85,7 @@
 
     var width = 0;
     var height = 0;
+    var waveHeight = VIEWBOX_HEIGHT;
     var dpr = 1;
     var lastTime = 0;
     var elapsed = 0;
@@ -129,12 +132,13 @@
     }
 
     function syncSize() {
-      var nextWidth = Math.max(1, wrap.clientWidth || 1);
-      var nextHeight = Math.max(1, wrap.clientHeight || VIEWBOX_HEIGHT);
+      var nextWidth = Math.max(1, footer.clientWidth || 1);
+      var nextHeight = Math.max(1, footer.clientHeight || VIEWBOX_HEIGHT);
+      var nextWaveHeight = Math.max(1, wrap.clientHeight || VIEWBOX_HEIGHT);
       var nextDpr = Math.min(window.devicePixelRatio || 1, 2);
       var previousWidth = width;
       var previousHeight = height;
-      if (nextWidth === width && nextHeight === height && nextDpr === dpr) return;
+      if (nextWidth === width && nextHeight === height && nextWaveHeight === waveHeight && nextDpr === dpr) return;
 
       if (previousWidth > 0 && previousHeight > 0 && drops.length) {
         var widthRatio = nextWidth / previousWidth;
@@ -154,6 +158,7 @@
 
       width = nextWidth;
       height = nextHeight;
+      waveHeight = nextWaveHeight;
       dpr = nextDpr;
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
@@ -187,7 +192,6 @@
       drop.state = 0;
       drop.age = 0;
       drop.timer = 1.05 + index * 0.23 + (drop.seed % 0.42);
-      resetSatellite(drop);
     }
 
     function updateSatellite(drop, dt) {
@@ -197,22 +201,23 @@
       satellite.velocityY += 112 * dt;
       satellite.x += satellite.velocityX * dt;
       satellite.y += satellite.velocityY * dt;
-      if (satellite.y - satellite.radius > height - 2 || satellite.age > 1.35) {
+      if (satellite.y - satellite.radius * 1.18 > height) {
         satellite.active = false;
       }
     }
 
     function updateDrop(drop, index, dt, time) {
+      updateSatellite(drop, dt);
       if (drop.state === 0) {
         drop.timer -= dt;
-        if (drop.timer <= 0) spawn(drop);
+        if (drop.timer <= 0 && !drop.satellite.active) spawn(drop);
         return;
       }
 
       if (drop.state === 1) {
         drop.age += dt;
         if (drop.age >= drop.formDuration) {
-          var currentEdge = edgeY(drop.x, width, height / VIEWBOX_HEIGHT, time);
+          var currentEdge = edgeY(drop.x, width, waveHeight / VIEWBOX_HEIGHT, time);
           drop.state = 2;
           drop.age = 0;
           drop.neck = 2 + drop.radius * 1.45;
@@ -240,15 +245,14 @@
         satellite.velocityX = drop.velocityX * 0.45 + satelliteSign * 8;
         satellite.velocityY = drop.velocityY * 0.66 - 14;
       }
-      updateSatellite(drop, dt);
 
-      if (drop.y - drop.radius * 2 > height - 1 || drop.age > 1.7) {
+      if (drop.y - drop.radius * 2 > height) {
         schedule(drop, index);
       }
     }
 
     function drawAttachedDrop(drop, time) {
-      var scale = height / VIEWBOX_HEIGHT;
+      var scale = waveHeight / VIEWBOX_HEIGHT;
       var surface = edgeY(drop.x, width, scale, time);
       var progress = smoothstep(drop.age / drop.formDuration);
       var radius = drop.radius * (0.14 + progress * 0.86);
@@ -402,12 +406,12 @@
 
     function draw(time) {
       if (!width || !height) return;
-      var scale = height / VIEWBOX_HEIGHT;
+      var scale = waveHeight / VIEWBOX_HEIGHT;
       var j;
 
       ctx.clearRect(0, 0, width, height);
-      makePath(ctx, width, height, time);
-      var coffeeGradient = ctx.createLinearGradient(0, 0, 0, height);
+      makePath(ctx, width, waveHeight, time);
+      var coffeeGradient = ctx.createLinearGradient(0, 0, 0, waveHeight);
       coffeeGradient.addColorStop(0, '#1A1310');
       coffeeGradient.addColorStop(0.48, '#1a1310');
       coffeeGradient.addColorStop(1, '#100a07');
@@ -452,8 +456,8 @@
         if (drop.state === 1) drawAttachedDrop(drop, time);
         else if (drop.state === 2) {
           drawFallingDrop(drop);
-          drawSatellite(drop.satellite);
         }
+        drawSatellite(drop.satellite);
       }
     }
 
@@ -523,7 +527,7 @@
         },
         disconnect: function () {}
       };
-    observer.observe(wrap);
+    observer.observe(footer);
 
     var resizeObserver = typeof ResizeObserver === 'function'
       ? new ResizeObserver(function () {
@@ -534,6 +538,7 @@
     var resizeListener = null;
     if (resizeObserver) {
       resizeObserver.observe(wrap);
+      resizeObserver.observe(footer);
     } else {
       resizeListener = function () {
         syncSize();

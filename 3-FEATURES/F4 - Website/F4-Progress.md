@@ -232,3 +232,9 @@ The footer coffee edge now uses a bounded canvas simulation with growing drops, 
 Mobile homepage navigation and grid sizing were corrected after the browser check exposed wrapping and horizontal overflow. Desktop and mobile browser checks covered the new presentation, feature-tour navigation, smooth wheel scrolling, anchor positioning, model fading, liquid movement, and reduced-motion fallback.
 
 These changes are implemented; human acceptance is not recorded. This main branch still uses the legacy website progress document. The separate feature branch's CYCLES.md and documentation migration remain untouched.
+
+### Connection and Droplet Follow-up — 2026-10-02
+
+The user requested more pronounced zigzag connections and reported droplets disappearing before reaching the footer bottom. Device links now follow rounded alternating bends while retaining attached endpoints and traveling pulses.
+
+The liquid canvas now spans the full footer independently of the wave-strip height. Drops retire only after leaving the bottom, and satellite drops finish independently rather than disappearing with their parent. Footer content stays above the non-interactive canvas. Desktop and mobile browser checks observed rendered drops reaching the bottom edge, preserved the 120px wave, and confirmed reduced-motion behavior and footer navigation. Human acceptance of these follow-up changes remains pending.

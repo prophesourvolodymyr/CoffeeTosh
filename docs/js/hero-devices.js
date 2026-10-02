@@ -433,17 +433,19 @@
     }
 
     function makeLink(start, end, side) {
-      const span = Math.abs(end.x - start.x);
       const curveStart = start.clone();
       const curveEnd = end.clone();
-      const control1 = start.clone().lerp(end, 0.30);
-      const control2 = start.clone().lerp(end, 0.72);
-      const shallowArc = isMobile ? 0.018 : Math.min(0.048, Math.max(0.026, span * 0.018));
-      control1.y -= shallowArc;
-      control2.y -= shallowArc * 0.68;
-      control1.z += side * 0.012;
-      control2.z += side * 0.006;
-      const curve = new THREE.CubicBezierCurve3(curveStart, control1, control2, curveEnd);
+      const direction = end.clone().sub(start);
+      const normal = new THREE.Vector3(-direction.y, direction.x, 0).normalize();
+      const amplitude = THREE.MathUtils.clamp(direction.length() * 0.2, 0.045, 0.13);
+      const points = [curveStart];
+      for (let index = 0; index < 4; index += 1) {
+        const progress = 0.18 + index * 0.21;
+        const offset = (index % 2 === 0 ? 1 : -1) * side * amplitude;
+        points.push(start.clone().lerp(end, progress).addScaledVector(normal, offset));
+      }
+      points.push(curveEnd);
+      const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.35);
       const radius = isMobile ? 0.0045 : 0.004;
       const tube = new THREE.TubeGeometry(curve, LINK_SEGMENTS, radius, 7, false);
       const haloTube = new THREE.TubeGeometry(curve, LINK_SEGMENTS, radius * 2.6, 7, false);
